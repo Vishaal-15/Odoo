@@ -1,0 +1,11 @@
+Alembic database migrations for Dayflow HRMS.
+Managed by Developer 3 (Database + Infrastructure).
+
+To generate a new migration:
+    python -m alembic revision --autogenerate -m "description_of_change"
+
+To apply migrations:
+    python -m alembic upgrade head
+
+To revert the last migration:
+    python -m alembic downgrade -1
