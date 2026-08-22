@@ -27,22 +27,38 @@ def wait_for_database(max_attempts: int = 40, delay_seconds: int = 2) -> None:
 
 
 def ensure_backend_schema() -> None:
-    inspector = inspect(engine)
-    tables = set(inspector.get_table_names())
-
-    # Backend API uses employee_profiles; Dev 3 schema uses employees instead.
-    if "employee_profiles" in tables:
-        print("[docker-entrypoint] Backend schema detected.")
-        return
-
-    print("[docker-entrypoint] Initializing backend schema for API...")
-    with engine.begin() as conn:
-        conn.execute(text("DROP SCHEMA IF EXISTS public CASCADE"))
-        conn.execute(text("CREATE SCHEMA public"))
-        conn.execute(text("GRANT ALL ON SCHEMA public TO public"))
-
     Base.metadata.create_all(bind=engine)
-    print("[docker-entrypoint] Backend tables created.")
+    print("[docker-entrypoint] Ensuring all backend tables and columns exist...")
+
+    # Auto-add missing columns to employee_profiles table
+    with engine.begin() as conn:
+        columns_to_add = [
+            ("company_name", "VARCHAR(100) DEFAULT 'Odoo India'"),
+            ("manager_name", "VARCHAR(100)"),
+            ("location", "VARCHAR(100) DEFAULT 'Bangalore Office'"),
+            ("about", "TEXT"),
+            ("what_i_love", "TEXT"),
+            ("interests_and_hobbies", "TEXT"),
+            ("skills", "TEXT"),
+            ("certifications", "TEXT"),
+            ("date_of_birth", "DATE"),
+            ("nationality", "VARCHAR(50) DEFAULT 'Indian'"),
+            ("personal_email", "VARCHAR(255)"),
+            ("gender", "VARCHAR(20) DEFAULT 'Male'"),
+            ("marital_status", "VARCHAR(20) DEFAULT 'Single'"),
+            ("bank_name", "VARCHAR(100) DEFAULT 'HDFC Bank'"),
+            ("account_number", "VARCHAR(50)"),
+            ("ifsc_code", "VARCHAR(30)"),
+            ("pan_no", "VARCHAR(30)"),
+            ("uan_no", "VARCHAR(30)"),
+        ]
+        for col_name, col_def in columns_to_add:
+            try:
+                conn.execute(text(f"ALTER TABLE employee_profiles ADD COLUMN IF NOT EXISTS {col_name} {col_def}"))
+            except Exception as e:
+                print(f"[docker-entrypoint] Column migration {col_name}: {e}")
+
+    print("[docker-entrypoint] Schema sync completed.")
 
 
 def seed_if_needed() -> None:
@@ -51,14 +67,16 @@ def seed_if_needed() -> None:
         from app.models.user import User
 
         count = db.query(User).count()
+        has_new_odoo_format = db.query(User).filter(User.employee_id.like("OI%")).count() > 0
     finally:
         db.close()
 
-    if count == 0:
-        print("[docker-entrypoint] Seeding hackathon team data...")
+    if count == 0 or not has_new_odoo_format:
+        print("[docker-entrypoint] Seeding updated Odoo team accounts and records...")
         seed_default_data(force=True)
     else:
-        print(f"[docker-entrypoint] Database already has {count} users. Skipping seed.")
+        print(f"[docker-entrypoint] Database populated with Odoo IDs ({count} users). Skipping seed.")
+
 
 
 def main() -> None:
