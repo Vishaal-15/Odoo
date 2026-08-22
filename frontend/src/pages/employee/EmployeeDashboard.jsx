@@ -7,8 +7,10 @@ import { leaveService } from '../../services/leaveService';
 import { payrollService } from '../../services/payrollService';
 import { notificationService } from '../../services/notificationService';
 import StatCard from '../../components/common/StatCard';
+import Card from '../../components/common/Card';
+import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { DashboardSkeleton } from '../../components/common/Skeleton';
 import AiInsightsCard from '../../components/ai/AiInsightsCard';
 import {
   User,
@@ -19,8 +21,11 @@ import {
   LogOut,
   CheckCircle2,
   ArrowRight,
+  ArrowUpRight,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Briefcase,
+  Layers,
 } from 'lucide-react';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 
@@ -87,137 +92,140 @@ export const EmployeeDashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   if (loading) {
-    return <LoadingSpinner message="Loading your employee portal..." />;
+    return <DashboardSkeleton />;
   }
 
   const isCheckedIn = todayAttendance?.check_in && !todayAttendance?.check_out;
-  const isCheckedOut = todayAttendance?.check_out;
+  const isCheckedOut = Boolean(todayAttendance?.check_out);
+
+  const quickLinks = [
+    {
+      label: 'My Profile',
+      desc: 'Personal & Job Info',
+      path: '/employee/profile',
+      icon: User,
+      color: 'bg-brand-500/10 text-brand-400 border-brand-500/20',
+    },
+    {
+      label: 'Attendance',
+      desc: 'Logs & Timesheets',
+      path: '/employee/attendance',
+      icon: Clock,
+      color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    },
+    {
+      label: 'Leave Requests',
+      desc: 'Apply & Balances',
+      path: '/employee/leave',
+      icon: Calendar,
+      color: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    },
+    {
+      label: 'Salary & Payslip',
+      desc: 'Earnings Breakdown',
+      path: '/employee/payroll',
+      icon: DollarSign,
+      color: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+    },
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-      {/* Header Greeting */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.02em' }}>
-            Hello, {user?.first_name || 'Team Member'} 👋
+    <div className="space-y-7">
+      {/* Top Banner Greeting + Live Shift Punch Card */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-brand-950/30 border border-slate-800/90 shadow-card">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-brand-400 tracking-wide uppercase">
+            <span>Enterprise Workspace</span>
+            <span>•</span>
+            <span>{formatDate(new Date(), { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-100 font-sans">
+            Good day, {user?.first_name || 'Team Member'} 👋
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-            Welcome to your Dayflow self-service portal • {formatDate(new Date(), { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+          <p className="text-xs sm:text-sm text-slate-400">
+            {user?.designation || 'Staff Engineer'} • {user?.department || 'Engineering'}
           </p>
         </div>
 
-        {/* Quick Check-in / Check-out Action Card */}
-        <div
-          style={{
-            backgroundColor: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-md)',
-            padding: '0.875rem 1.25rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1.25rem',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
+        {/* Live Attendance Punch Box */}
+        <div className="flex items-center gap-4 p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 shrink-0">
           <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: 600 }}>
+            <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
               Shift Status
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '2px' }}>
+            <div className="flex items-center gap-2 mt-0.5">
               <span
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: isCheckedIn ? 'var(--success)' : isCheckedOut ? 'var(--info)' : 'var(--warning)',
-                }}
+                className={`w-2.5 h-2.5 rounded-full ${
+                  isCheckedIn ? 'bg-emerald-400 animate-pulse' : isCheckedOut ? 'bg-sky-400' : 'bg-amber-400'
+                }`}
               />
-              <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                {isCheckedIn ? 'Currently Working' : isCheckedOut ? 'Shift Completed' : 'Not Checked In'}
+              <span className="text-xs sm:text-sm font-bold text-slate-200">
+                {isCheckedIn ? 'Currently Active' : isCheckedOut ? 'Shift Logged' : 'Not Punched In'}
               </span>
             </div>
           </div>
 
           {!isCheckedIn && !isCheckedOut && (
-            <button
+            <Button
               onClick={handleCheckIn}
-              disabled={actionLoading}
-              className="btn btn-primary"
-              style={{ padding: '0.5rem 1rem' }}
+              isLoading={actionLoading}
+              size="sm"
+              variant="primary"
+              icon={Clock}
             >
-              <Clock size={16} /> Check In Now
-            </button>
+              Clock In Now
+            </Button>
           )}
 
           {isCheckedIn && (
-            <button
+            <Button
               onClick={handleCheckOut}
-              disabled={actionLoading}
-              className="btn btn-outline"
-              style={{ padding: '0.5rem 1rem', borderColor: 'var(--warning)', color: '#fbbf24' }}
+              isLoading={actionLoading}
+              size="sm"
+              variant="danger"
+              icon={LogOut}
             >
-              <LogOut size={16} /> Check Out
-            </button>
+              Clock Out
+            </Button>
           )}
         </div>
       </div>
 
-      {/* Quick Access Grid (Specified in Problem Statement 3.2.1) */}
+      {/* Quick Access Modules */}
       <div>
-        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+        <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
           Quick Access Modules
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-          <Link to="/employee/profile" className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', transition: 'transform 0.15s ease' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '10px', backgroundColor: 'rgba(99, 102, 241, 0.15)', color: 'var(--primary-500)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <User size={20} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>My Profile</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Personal & Job info</div>
-            </div>
-          </Link>
-
-          <Link to="/employee/attendance" className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '10px', backgroundColor: 'rgba(16, 185, 129, 0.15)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Clock size={20} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Attendance</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Timesheets & logs</div>
-            </div>
-          </Link>
-
-          <Link to="/employee/leave" className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '10px', backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Calendar size={20} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Leave Requests</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Apply & balance</div>
-            </div>
-          </Link>
-
-          <Link to="/employee/payroll" className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '10px', backgroundColor: 'rgba(59, 130, 246, 0.15)', color: 'var(--info)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <DollarSign size={20} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Salary & Payslip</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Earnings summary</div>
-            </div>
-          </Link>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {quickLinks.map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={idx}
+                to={item.path}
+                className="group flex items-center justify-between p-4 rounded-xl bg-slate-900/80 border border-slate-800/80 hover:border-slate-700/90 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 ${item.color}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors">
+                      {item.label}
+                    </div>
+                    <div className="text-xs text-slate-400">{item.desc}</div>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+            );
+          })}
         </div>
       </div>
 
-      {/* KPI Overview Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+      {/* KPI Overview Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           title="Paid Leave Remaining"
           value={`${leaveBalances.find((b) => b.type === 'Paid Leave')?.remaining || 14} Days`}
@@ -233,54 +241,57 @@ export const EmployeeDashboard = () => {
           color="success"
         />
         <StatCard
-          title="Attendance Rate"
+          title="Monthly Attendance"
           value="98.5%"
-          subtitle="Past 30 workdays active"
+          subtitle="Past 30 working days verified"
           icon={Clock}
           color="info"
         />
       </div>
 
-      {/* Main Content Layout: Activity / Alerts + AI Insights */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
-        {/* Recent Alerts / Activity */}
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Recent Alerts & Notifications</h3>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Updates from HR and management</p>
-            </div>
-            <Link to="/employee/notifications" style={{ fontSize: '0.8rem', color: 'var(--primary-500)', fontWeight: 500 }}>
+      {/* Split Activity & AI Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Alerts Card */}
+        <Card
+          title="Recent Notices & Alerts"
+          subtitle="System & HR updates"
+          headerIcon={Bell}
+          action={
+            <Link to="/employee/notifications" className="text-xs font-semibold text-brand-400 hover:text-brand-300">
               View All
             </Link>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-            {recentNotifications.map((n) => (
-              <div
-                key={n.id}
-                style={{
-                  padding: '0.875rem',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'var(--bg-main)',
-                  border: '1px solid var(--border-subtle)',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.75rem',
-                }}
-              >
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: n.is_read ? 'var(--text-dim)' : 'var(--primary-500)', marginTop: '6px', flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>{n.title}</div>
-                  <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)', marginTop: '2px' }}>{n.message}</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginTop: '6px' }}>{formatDate(n.created_at)}</div>
+          }
+        >
+          {recentNotifications.length === 0 ? (
+            <div className="py-8 text-center text-xs text-slate-400">
+              No recent notifications.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentNotifications.map((n) => (
+                <div
+                  key={n.id}
+                  className="flex items-start gap-3 p-3 rounded-lg bg-slate-950/40 border border-slate-800/60 hover:border-slate-700/60 transition-colors"
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                      n.is_read ? 'bg-slate-600' : 'bg-brand-500 animate-pulse'
+                    }`}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs sm:text-sm font-semibold text-slate-200 truncate">
+                      {n.title}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{n.message}</p>
+                    <div className="text-[10px] text-slate-500 mt-1.5">{formatDate(n.created_at)}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          )}
+        </Card>
 
-        {/* AI Workforce Insights Placeholder */}
+        {/* AI Workforce Intelligence Card */}
         <AiInsightsCard />
       </div>
     </div>

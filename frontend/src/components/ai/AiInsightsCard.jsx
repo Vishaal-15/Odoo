@@ -1,88 +1,55 @@
 import React from 'react';
-import { Sparkles, Brain, Lightbulb, CheckCircle2 } from 'lucide-react';
+import { Sparkles, ArrowRight, Lightbulb, CheckCircle2 } from 'lucide-react';
+import Card from '../common/Card';
 
 export const AiInsightsCard = () => {
   const sampleInsights = [
     {
-      title: 'Optimal Staffing Coverage',
-      desc: 'No scheduling conflicts detected for next week. Engineering team coverage remains at 91%.',
+      title: 'Optimal Shift & Schedule Coverage',
+      desc: 'Engineering sprint coverage is projected at 94% next week. No critical staffing bottlenecks detected.',
       confidence: '98%',
+      type: 'success',
     },
     {
-      title: 'Leave Pattern Observation',
-      desc: '3 team members requested leaves surrounding Labor Day weekend. Early approval recommended to maintain support roster.',
+      title: 'Seasonal Leave Pattern Forecast',
+      desc: '3 team members requested time off near upcoming holiday window. Automated coverage checks suggest early approval.',
       confidence: '92%',
+      type: 'info',
     },
   ];
 
   return (
-    <div
-      className="card"
-      style={{
-        background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(49, 46, 129, 0.25) 100%)',
-        border: '1px solid rgba(99, 102, 241, 0.3)',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <div
-            style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '6px',
-              backgroundColor: 'rgba(99, 102, 241, 0.2)',
-              color: 'var(--primary-500)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Sparkles size={16} />
-          </div>
-          <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#e0e7ff' }}>
-            Dayflow AI Workforce Intelligence
-          </h3>
-        </div>
-        <span
-          style={{
-            fontSize: '0.7rem',
-            padding: '2px 8px',
-            borderRadius: '9999px',
-            backgroundColor: 'rgba(99, 102, 241, 0.2)',
-            color: '#c7d2fe',
-            border: '1px solid rgba(99, 102, 241, 0.4)',
-          }}
-        >
-          AI UI Ready
+    <Card
+      className="relative overflow-hidden bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-brand-950/40 border-brand-500/25 shadow-glow-brand"
+      title="Workforce Intelligence"
+      subtitle="AI-driven operational alerts & patterns"
+      headerIcon={Sparkles}
+      action={
+        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30">
+          AI Active
         </span>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      }
+    >
+      <div className="space-y-3">
         {sampleInsights.map((item, idx) => (
           <div
             key={idx}
-            style={{
-              padding: '0.75rem',
-              backgroundColor: 'rgba(15, 23, 42, 0.6)',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--border-subtle)',
-            }}
+            className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 hover:border-slate-700/80 transition-colors"
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <span className="text-xs sm:text-sm font-semibold text-slate-100 flex items-center gap-1.5">
+                <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 {item.title}
               </span>
-              <span style={{ fontSize: '0.7rem', color: 'var(--success)' }}>
-                Confidence: {item.confidence}
+              <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">
+                {item.confidence} match
               </span>
             </div>
-            <p style={{ fontSize: '0.775rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-              {item.desc}
-            </p>
+            <p className="text-xs text-slate-400 leading-relaxed pl-5">{item.desc}</p>
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 };
 

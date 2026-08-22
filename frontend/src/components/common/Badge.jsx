@@ -1,38 +1,57 @@
 import React from 'react';
 import { getStatusColor } from '../../utils/formatters';
 
-export const Badge = ({ children, status, variant, className = '' }) => {
+export const Badge = ({ children, status, variant, size = 'sm', className = '' }) => {
   const colorType = variant || (status ? getStatusColor(status) : 'secondary');
 
   const colorStyles = {
-    success: { bg: 'rgba(16, 185, 129, 0.15)', text: '#34d399', border: 'rgba(16, 185, 129, 0.3)' },
-    warning: { bg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24', border: 'rgba(245, 158, 11, 0.3)' },
-    danger: { bg: 'rgba(239, 68, 68, 0.15)', text: '#f87171', border: 'rgba(239, 68, 68, 0.3)' },
-    info: { bg: 'rgba(59, 130, 246, 0.15)', text: '#60a5fa', border: 'rgba(59, 130, 246, 0.3)' },
-    secondary: { bg: 'rgba(148, 163, 184, 0.15)', text: '#cbd5e1', border: 'rgba(148, 163, 184, 0.3)' },
+    success: {
+      bg: 'bg-emerald-500/10',
+      text: 'text-emerald-400',
+      border: 'border-emerald-500/25',
+      dot: 'bg-emerald-400',
+    },
+    warning: {
+      bg: 'bg-amber-500/10',
+      text: 'text-amber-300',
+      border: 'border-amber-500/25',
+      dot: 'bg-amber-400',
+    },
+    danger: {
+      bg: 'bg-rose-500/10',
+      text: 'text-rose-300',
+      border: 'border-rose-500/25',
+      dot: 'bg-rose-400',
+    },
+    info: {
+      bg: 'bg-sky-500/10',
+      text: 'text-sky-300',
+      border: 'border-sky-500/25',
+      dot: 'bg-sky-400',
+    },
+    brand: {
+      bg: 'bg-brand-500/10',
+      text: 'text-brand-300',
+      border: 'border-brand-500/25',
+      dot: 'bg-brand-400',
+    },
+    secondary: {
+      bg: 'bg-slate-500/10',
+      text: 'text-slate-300',
+      border: 'border-slate-500/25',
+      dot: 'bg-slate-400',
+    },
   };
 
   const style = colorStyles[colorType] || colorStyles.secondary;
+  const sizeClass = size === 'xs' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-0.5 text-xs';
 
   return (
     <span
-      className={`badge ${className}`}
-      style={{
-        backgroundColor: style.bg,
-        color: style.text,
-        border: `1px solid ${style.border}`,
-        padding: '0.2rem 0.6rem',
-        borderRadius: '9999px',
-        fontSize: '0.75rem',
-        fontWeight: 600,
-        letterSpacing: '0.025em',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.25rem',
-        textTransform: 'uppercase',
-      }}
+      className={`inline-flex items-center gap-1.5 font-medium rounded-full border tracking-wide uppercase ${style.bg} ${style.text} ${style.border} ${sizeClass} ${className}`}
     >
-      {children || status}
+      <span className={`w-1.5 h-1.5 rounded-full ${style.dot} shrink-0`} />
+      <span>{children || status}</span>
     </span>
   );
 };

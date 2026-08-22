@@ -1,5 +1,6 @@
 import React from 'react';
-import { Building2, Users, Briefcase } from 'lucide-react';
+import Card from '../common/Card';
+import { Building2, Users } from 'lucide-react';
 
 export const WorkforceStats = ({ departments = [] }) => {
   const defaultDepts = [
@@ -13,56 +14,37 @@ export const WorkforceStats = ({ departments = [] }) => {
   const depts = departments.length > 0 ? departments : defaultDepts;
 
   return (
-    <div className="card">
-      <div style={{ marginBottom: '1.25rem' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Department Headcount Breakdown</h3>
-        <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Workforce distribution across functional teams</p>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+    <Card
+      title="Department Headcount Breakdown"
+      subtitle="Workforce distribution across functional divisions"
+      headerIcon={Building2}
+    >
+      <div className="space-y-2.5">
         {depts.map((dept, idx) => (
           <div
             key={idx}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0.75rem',
-              borderRadius: 'var(--radius-sm)',
-              backgroundColor: 'var(--bg-main)',
-              border: '1px solid var(--border-subtle)',
-            }}
+            className="flex items-center justify-between p-3 rounded-xl bg-slate-950/40 border border-slate-800/70 hover:border-slate-700/80 transition-colors"
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '6px',
-                  backgroundColor: 'rgba(99, 102, 241, 0.15)',
-                  color: 'var(--primary-500)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Building2 size={16} />
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center shrink-0">
+                <Building2 className="w-4 h-4" />
               </div>
               <div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-main)' }}>{dept.name}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Lead: {dept.lead}</div>
+                <div className="text-xs sm:text-sm font-semibold text-slate-100">{dept.name}</div>
+                <div className="text-[11px] text-slate-400">Team Lead: {dept.lead || 'Department Manager'}</div>
               </div>
             </div>
 
-            <div style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary-100)' }}>
+            <div className="text-right">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-200 border border-slate-700/60">
+                <Users className="w-3 h-3 text-slate-400" />
                 {dept.count} members
               </span>
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 };
 

@@ -1,5 +1,7 @@
 import React from 'react';
-import { DollarSign, CheckCircle2, Calendar, FileText } from 'lucide-react';
+import Card from '../common/Card';
+import Button from '../common/Button';
+import { DollarSign, Calendar, TrendingUp } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 
 export const PayrollSummaryCard = ({ payrollSummary, onGeneratePayroll }) => {
@@ -11,42 +13,48 @@ export const PayrollSummaryCard = ({ payrollSummary, onGeneratePayroll }) => {
   };
 
   return (
-    <div className="card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-        <div>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Payroll Overview & Processing</h3>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Current pay cycle budget and disbursements</p>
-        </div>
-        {onGeneratePayroll && (
-          <button onClick={onGeneratePayroll} className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
-            Run Payroll Cycle
-          </button>
-        )}
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-        <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)' }}>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total Monthly Outlay</span>
-          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '4px' }}>
+    <Card
+      title="Payroll Overview & Forecast"
+      subtitle="Current pay cycle commitments and upcoming disbursements"
+      headerIcon={DollarSign}
+      action={
+        onGeneratePayroll && (
+          <Button onClick={onGeneratePayroll} size="xs" variant="primary">
+            Run Batch
+          </Button>
+        )
+      }
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
+          <div className="text-xs font-medium text-slate-400">Total Monthly Outlay</div>
+          <div className="text-lg sm:text-xl font-bold text-slate-100 mt-1">
             {formatCurrency(summary.totalPayrollExpense)}
           </div>
-        </div>
-
-        <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)' }}>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Average Net Compensation</span>
-          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '4px' }}>
-            {formatCurrency(summary.averageSalary)}
+          <div className="text-[11px] text-emerald-400 flex items-center gap-1 mt-1 font-medium">
+            <TrendingUp className="w-3 h-3" /> Balanced budget
           </div>
         </div>
 
-        <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)' }}>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Upcoming Disbursement</span>
-          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--primary-100)', marginTop: '4px' }}>
+        <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
+          <div className="text-xs font-medium text-slate-400">Average Net Compensation</div>
+          <div className="text-lg sm:text-xl font-bold text-slate-100 mt-1">
+            {formatCurrency(summary.averageSalary)}
+          </div>
+          <div className="text-[11px] text-slate-500 mt-1">Per active employee</div>
+        </div>
+
+        <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80">
+          <div className="text-xs font-medium text-slate-400">Upcoming Disbursement</div>
+          <div className="text-lg sm:text-xl font-bold text-brand-300 mt-1">
             {summary.nextPayDay}
+          </div>
+          <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-1">
+            <Calendar className="w-3 h-3 text-brand-400" /> Auto-scheduled
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 

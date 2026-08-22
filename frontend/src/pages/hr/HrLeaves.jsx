@@ -3,11 +3,15 @@ import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
 import { leaveService } from '../../services/leaveService';
 import StatCard from '../../components/common/StatCard';
+import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Button from '../../components/common/Button';
+import Textarea from '../../components/common/Textarea';
+import PageHeader from '../../components/common/PageHeader';
 import EmptyState from '../../components/common/EmptyState';
-import { Calendar, CheckCircle2, XCircle, Clock, Filter, MessageSquare } from 'lucide-react';
+import { TableSkeleton } from '../../components/common/Skeleton';
+import { Calendar, CheckCircle2, XCircle, Clock, Filter, MessageSquare, Check, X } from 'lucide-react';
 import { formatDate } from '../../utils/formatters';
 
 export const HrLeaves = () => {
@@ -20,7 +24,7 @@ export const HrLeaves = () => {
 
   // Approval decision modal state
   const [selectedLeave, setSelectedLeave] = useState(null);
-  const [decisionType, setDecisionType] = useState('APPROVED'); // 'APPROVED' or 'REJECTED'
+  const [decisionType, setDecisionType] = useState('APPROVED');
   const [comments, setComments] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -71,123 +75,120 @@ export const HrLeaves = () => {
   const rejectedCount = leaves.filter((l) => l.status === 'REJECTED').length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header */}
-      <div>
-        <h1 style={{ fontSize: '1.65rem', fontWeight: 700 }}>Leave & Time-Off Approval Console</h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-          Review employee leave applications, submit manager decisions, and log feedback
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Leave & Time-Off Approvals"
+        subtitle="Review employee leave applications, execute manager decisions, and log official feedback"
+        breadcrumbs={['HR Operations', 'Leave Approvals']}
+      />
 
       {/* KPI Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           title="Pending Approvals"
           value={pendingCount}
-          subtitle="Awaiting decision"
+          subtitle="Awaiting management decision"
           icon={Clock}
           color={pendingCount > 0 ? 'warning' : 'info'}
         />
         <StatCard
           title="Approved This Month"
           value={approvedCount}
-          subtitle="Processed time-off"
+          subtitle="Processed leave applications"
           icon={CheckCircle2}
           color="success"
         />
         <StatCard
           title="Rejected Requests"
           value={rejectedCount}
-          subtitle="Policy / conflict rejections"
+          subtitle="Schedule conflict or quota limits"
           icon={XCircle}
           color="danger"
         />
       </div>
 
-      {/* Filter Bar */}
-      <div className="card" style={{ padding: '1rem 1.25rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>Filter Requests by Status:</div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+      {/* Table Card */}
+      <Card
+        title={`Leave Applications (${filteredLeaves.length})`}
+        subtitle="Review, approve, or reject team leave requests"
+        action={
+          <div className="flex items-center gap-1.5 p-1 bg-slate-950/60 rounded-lg border border-slate-800">
             {['ALL', 'PENDING', 'APPROVED', 'REJECTED'].map((st) => (
               <button
                 key={st}
                 onClick={() => setFilterStatus(st)}
-                className={`btn ${filterStatus === st ? 'btn-primary' : 'btn-outline'}`}
-                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                  filterStatus === st
+                    ? 'bg-brand-600 text-white'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
               >
-                {st === 'ALL' ? 'All Requests' : st}
+                {st === 'ALL' ? 'All' : st}
               </button>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Leaves Table Card */}
-      <div className="card">
+        }
+      >
         {loading ? (
-          <LoadingSpinner message="Loading leave applications..." />
+          <TableSkeleton rows={4} cols={7} />
         ) : filteredLeaves.length === 0 ? (
-          <EmptyState title="No leave applications" description="There are no leave requests under this filter category." />
+          <EmptyState
+            icon={Calendar}
+            title="No leave applications found"
+            description="No requests match the selected status filter."
+          />
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+          <div className="saas-table-container">
+            <table className="saas-table">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-dim)' }}>
-                  <th style={{ padding: '0.75rem 1rem' }}>Employee</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Leave Type</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Requested Dates</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Duration</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Reason</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Status</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Actions</th>
+                <tr>
+                  <th>Employee</th>
+                  <th>Leave Type</th>
+                  <th>Requested Dates</th>
+                  <th>Duration</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredLeaves.map((l) => (
-                  <tr key={l.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{l.employee_name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{l.employee_id}</div>
+                  <tr key={l.id}>
+                    <td>
+                      <div className="font-bold text-slate-100">{l.employee_name}</div>
+                      <div className="text-[11px] font-mono text-slate-400">{l.employee_id}</div>
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>
-                      {l.leave_type}
+                    <td className="font-medium text-slate-200">{l.leave_type}</td>
+                    <td className="text-xs text-slate-300">
+                      {formatDate(l.start_date)} <span className="text-slate-500">to</span> {formatDate(l.end_date)}
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
-                      {formatDate(l.start_date)} — {formatDate(l.end_date)}
+                    <td className="font-semibold text-slate-200">{l.days_count} days</td>
+                    <td className="text-xs text-slate-400 max-w-xs truncate">{l.reason}</td>
+                    <td>
+                      <Badge status={l.status} size="xs" />
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
-                      {l.days_count} days
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', maxWidth: '200px' }}>
-                      {l.reason}
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <Badge status={l.status} />
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
+                    <td className="text-right">
                       {l.status === 'PENDING' ? (
-                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
-                          <button
+                        <div className="inline-flex items-center gap-1.5">
+                          <Button
                             onClick={() => openDecisionModal(l, 'APPROVED')}
-                            className="btn btn-outline"
-                            style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', borderColor: 'var(--success)', color: '#34d399' }}
-                            title="Approve Request"
+                            variant="success"
+                            size="xs"
+                            icon={Check}
                           >
-                            <CheckCircle2 size={14} /> Approve
-                          </button>
-                          <button
+                            Approve
+                          </Button>
+                          <Button
                             onClick={() => openDecisionModal(l, 'REJECTED')}
-                            className="btn btn-outline"
-                            style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', borderColor: 'var(--danger)', color: '#f87171' }}
-                            title="Reject Request"
+                            variant="danger"
+                            size="xs"
+                            icon={X}
                           >
-                            <XCircle size={14} /> Reject
-                          </button>
+                            Reject
+                          </Button>
                         </div>
                       ) : (
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                        <span className="text-[11px] text-slate-400">
                           Reviewed by {l.reviewed_by || 'HR'}
                         </span>
                       )}
@@ -198,47 +199,56 @@ export const HrLeaves = () => {
             </table>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Decision Modal */}
       <Modal
-        isOpen={!!selectedLeave}
+        isOpen={Boolean(selectedLeave)}
         onClose={() => setSelectedLeave(null)}
         title={`${decisionType === 'APPROVED' ? 'Approve' : 'Reject'} Leave Request`}
+        subtitle="Submit management decision and optional feedback"
       >
         {selectedLeave && (
-          <form onSubmit={handleDecisionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)', fontSize: '0.85rem' }}>
-              <div>Employee: <strong>{selectedLeave.employee_name}</strong></div>
-              <div>Leave Type: <strong>{selectedLeave.leave_type}</strong> ({selectedLeave.days_count} days)</div>
-              <div>Reason: <em>{selectedLeave.reason}</em></div>
+          <form onSubmit={handleDecisionSubmit} className="space-y-4">
+            <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5 text-xs sm:text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Employee:</span>
+                <span className="font-bold text-slate-100">{selectedLeave.employee_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Leave Type:</span>
+                <span className="font-semibold text-slate-200">{selectedLeave.leave_type} ({selectedLeave.days_count} days)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Duration:</span>
+                <span className="text-slate-300">{formatDate(selectedLeave.start_date)} — {formatDate(selectedLeave.end_date)}</span>
+              </div>
+              <div className="pt-1.5 border-t border-slate-800 text-slate-300">
+                <span className="text-slate-500 block mb-0.5">Reason:</span>
+                <em>"{selectedLeave.reason}"</em>
+              </div>
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                Reviewer Remarks / Feedback
-              </label>
-              <textarea
-                rows={3}
-                required
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
-                style={{ width: '100%' }}
-              />
-            </div>
+            <Textarea
+              label="Reviewer Comments & Feedback"
+              required
+              rows={3}
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+              placeholder="Add review notes for the employee..."
+            />
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
-              <button type="button" onClick={() => setSelectedLeave(null)} className="btn btn-outline">
+            <div className="flex justify-end gap-2.5 pt-3">
+              <Button type="button" variant="outline" onClick={() => setSelectedLeave(null)}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
-                disabled={submitting}
-                className={`btn ${decisionType === 'APPROVED' ? 'btn-primary' : 'btn-outline'}`}
-                style={decisionType === 'REJECTED' ? { backgroundColor: 'var(--danger)', color: '#fff', border: 'none' } : {}}
+                variant={decisionType === 'APPROVED' ? 'success' : 'danger'}
+                isLoading={submitting}
               >
-                {submitting ? 'Processing...' : `Confirm ${decisionType}`}
-              </button>
+                Confirm {decisionType === 'APPROVED' ? 'Approval' : 'Rejection'}
+              </Button>
             </div>
           </form>
         )}

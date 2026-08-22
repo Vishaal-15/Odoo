@@ -2,8 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
 import { employeeService } from '../../services/employeeService';
+import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import Textarea from '../../components/common/Textarea';
+import PageHeader from '../../components/common/PageHeader';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import {
   User,
@@ -15,9 +20,10 @@ import {
   Calendar,
   DollarSign,
   FileText,
-  Edit,
-  Save,
-  CheckCircle2
+  Edit3,
+  ShieldCheck,
+  Building2,
+  CheckCircle2,
 } from 'lucide-react';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 
@@ -83,230 +89,173 @@ export const EmployeeProfile = () => {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1000px' }}>
-      {/* Profile Banner Card */}
-      <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <img
-            src={profile?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-            alt="Profile Avatar"
-            style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '50%',
-              objectFit: 'cover',
-              border: '3px solid var(--primary-600)',
-            }}
-          />
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+    <div className="space-y-6 max-w-5xl">
+      <PageHeader
+        title="Employee Profile"
+        subtitle="Manage your personal details, employment records, and tax forms"
+        breadcrumbs={['Workspace', 'My Profile']}
+        actions={
+          <Button onClick={() => setIsEditModalOpen(true)} size="sm" variant="secondary" icon={Edit3}>
+            Edit Contact Details
+          </Button>
+        }
+      />
+
+      {/* Main Profile Header Card */}
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-brand-950/30 border border-slate-800 shadow-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="flex items-center gap-5">
+          <div className="relative">
+            <img
+              src={profile?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+              alt="Profile Avatar"
+              className="w-20 h-20 rounded-2xl object-cover border-2 border-brand-500/40 shadow-glow-brand"
+            />
+            <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 ring-4 ring-slate-900" />
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-100 font-sans">
                 {profile?.first_name} {profile?.last_name}
-              </h1>
-              <Badge status={profile?.role}>{profile?.role}</Badge>
+              </h2>
+              <Badge variant="brand" size="xs">
+                {profile?.role || 'EMPLOYEE'}
+              </Badge>
+              <Badge status={profile?.status || 'ACTIVE'} size="xs" />
             </div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '2px' }}>
-              {profile?.job_title || 'Software Engineer'} • {profile?.department || 'Engineering'}
+
+            <p className="text-xs sm:text-sm text-slate-400 font-medium flex items-center gap-2">
+              <span>{profile?.job_title || 'Software Engineer'}</span>
+              <span>•</span>
+              <span className="text-slate-300">{profile?.department || 'Engineering'}</span>
             </p>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-              Employee ID: <strong>{profile?.employee_id || 'EMP-003'}</strong>
-            </div>
-          </div>
-        </div>
 
-        <button
-          onClick={() => setIsEditModalOpen(true)}
-          className="btn btn-outline"
-          style={{ display: 'flex', gap: '0.5rem' }}
-        >
-          <Edit size={16} /> Edit Contact Info
-        </button>
-      </div>
-
-      {/* Grid: Personal & Job Info */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
-        {/* Personal Details */}
-        <div className="card">
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <User size={18} color="var(--primary-500)" /> Personal & Contact Details
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.875rem' }}>
-            <div>
-              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Work Email</span>
-              <span style={{ fontWeight: 500 }}>{profile?.email}</span>
-            </div>
-            <div>
-              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Phone Number</span>
-              <span style={{ fontWeight: 500 }}>{profile?.phone || '+1 (555) 018-4433'}</span>
-            </div>
-            <div>
-              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Residential Address</span>
-              <span style={{ fontWeight: 500 }}>{profile?.address || '104 Market Street, Apt 4B, San Francisco, CA'}</span>
-            </div>
-            <div>
-              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Account Status</span>
-              <Badge status={profile?.is_active ? 'ACTIVE' : 'INACTIVE'} />
-            </div>
-          </div>
-        </div>
-
-        {/* Job Details */}
-        <div className="card">
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Briefcase size={18} color="var(--primary-500)" /> Employment & Role Details
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.875rem' }}>
-            <div>
-              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Department</span>
-              <span style={{ fontWeight: 500 }}>{profile?.department || 'Software Engineering'}</span>
-            </div>
-            <div>
-              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Job Designation</span>
-              <span style={{ fontWeight: 500 }}>{profile?.job_title || 'Senior Frontend Engineer'}</span>
-            </div>
-            <div>
-              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Joining / Hire Date</span>
-              <span style={{ fontWeight: 500 }}>{formatDate(profile?.hire_date || '2023-06-12')}</span>
-            </div>
-            <div>
-              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.75rem' }}>Employment Type</span>
-              <span style={{ fontWeight: 500 }}>Full-Time Regular</span>
-            </div>
+            <p className="text-xs text-slate-400 font-mono">
+              Employee ID: <span className="text-brand-300 font-semibold">{profile?.employee_id || 'EMP003'}</span>
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Salary Structure Overview (Read-Only) */}
-      <div className="card">
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <DollarSign size={18} color="var(--primary-500)" /> Compensation & Salary Structure (Read-Only)
-        </h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-          <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Basic Pay</span>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '4px' }}>
-              {formatCurrency(6000)} / mo
+      {/* Split Info Sections */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Personal & Contact Card */}
+        <Card title="Personal & Contact Information" headerIcon={User}>
+          <dl className="divide-y divide-slate-800/80 text-xs sm:text-sm">
+            <div className="py-3 flex justify-between items-center">
+              <dt className="text-slate-400 flex items-center gap-2">
+                <Mail className="w-4 h-4 text-slate-500" /> Email Address
+              </dt>
+              <dd className="font-semibold text-slate-200">{profile?.email}</dd>
             </div>
-          </div>
-          <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Total Allowances</span>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--success)', marginTop: '4px' }}>
-              {formatCurrency(2350)} / mo
+            <div className="py-3 flex justify-between items-center">
+              <dt className="text-slate-400 flex items-center gap-2">
+                <Phone className="w-4 h-4 text-slate-500" /> Mobile Phone
+              </dt>
+              <dd className="font-semibold text-slate-200">{profile?.phone || '+1-555-0199'}</dd>
             </div>
-          </div>
-          <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Standard Deductions</span>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--danger)', marginTop: '4px' }}>
-              {formatCurrency(920)} / mo
+            <div className="py-3 flex justify-between items-start">
+              <dt className="text-slate-400 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-slate-500" /> Residential Address
+              </dt>
+              <dd className="font-semibold text-slate-200 text-right max-w-xs">
+                {profile?.address || '120 Market St, San Francisco, CA'}
+              </dd>
             </div>
-          </div>
-          <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Estimated Net Salary</span>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--primary-100)', marginTop: '4px' }}>
-              {formatCurrency(7430)} / mo
+          </dl>
+        </Card>
+
+        {/* Job & Compensation Details */}
+        <Card title="Employment & Compensation" headerIcon={Briefcase}>
+          <dl className="divide-y divide-slate-800/80 text-xs sm:text-sm">
+            <div className="py-3 flex justify-between items-center">
+              <dt className="text-slate-400 flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-slate-500" /> Department Division
+              </dt>
+              <dd className="font-semibold text-slate-200">{profile?.department || 'Engineering'}</dd>
             </div>
-          </div>
-        </div>
+            <div className="py-3 flex justify-between items-center">
+              <dt className="text-slate-400 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-slate-500" /> Hire / Joining Date
+              </dt>
+              <dd className="font-semibold text-slate-200">{formatDate(profile?.hire_date || '2023-01-15')}</dd>
+            </div>
+            <div className="py-3 flex justify-between items-center">
+              <dt className="text-slate-400 flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-slate-500" /> Base Annual Salary
+              </dt>
+              <dd className="font-semibold text-emerald-400">{formatCurrency(profile?.salary || 95000)}</dd>
+            </div>
+          </dl>
+        </Card>
       </div>
 
-      {/* Onboarding Documents */}
-      <div className="card">
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <FileText size={18} color="var(--primary-500)" /> Official Onboarding Documents
-        </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      {/* Employment Documents */}
+      <Card title="Employee Documents & Agreements" subtitle="Official compliance files" headerIcon={FileText}>
+        <div className="divide-y divide-slate-800/80">
           {sampleDocuments.map((doc, idx) => (
-            <div
-              key={idx}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '0.75rem 1rem',
-                backgroundColor: 'var(--bg-main)',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '0.875rem',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <FileText size={18} color="var(--text-muted)" />
+            <div key={idx} className="py-3.5 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-slate-800/80 text-brand-400 border border-slate-700/60 flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4" />
+                </div>
                 <div>
-                  <span style={{ fontWeight: 500, color: 'var(--text-main)' }}>{doc.name}</span>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Uploaded {formatDate(doc.date)} • {doc.size}</div>
+                  <div className="text-xs sm:text-sm font-semibold text-slate-200">{doc.name}</div>
+                  <div className="text-[11px] text-slate-500">Uploaded {formatDate(doc.date)} • {doc.size}</div>
                 </div>
               </div>
-              <button className="btn btn-outline" style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
-                Download
+
+              <button
+                type="button"
+                onClick={() => addToast(`Opening ${doc.name}...`, 'info')}
+                className="text-xs font-semibold text-brand-400 hover:text-brand-300"
+              >
+                Download {doc.type}
               </button>
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       {/* Edit Profile Modal */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         title="Edit Contact Information"
+        subtitle="Update your phone, address, and profile avatar URL"
       >
-        <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-              Phone Number
-            </label>
-            <input
-              type="text"
-              required
-              value={editFormData.phone}
-              onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-              placeholder="+1 (555) 018-4433"
-              style={{ width: '100%' }}
-            />
-          </div>
+        <form onSubmit={handleSaveProfile} className="space-y-4">
+          <Input
+            label="Phone Number"
+            value={editFormData.phone}
+            onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+            placeholder="+1-555-0199"
+            icon={Phone}
+          />
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-              Residential Address
-            </label>
-            <textarea
-              rows={3}
-              required
-              value={editFormData.address}
-              onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
-              placeholder="104 Market Street, Apt 4B, San Francisco, CA"
-              style={{ width: '100%' }}
-            />
-          </div>
+          <Textarea
+            label="Home / Residential Address"
+            value={editFormData.address}
+            onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
+            placeholder="120 Market St, San Francisco, CA"
+            rows={3}
+          />
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-              Profile Avatar URL
-            </label>
-            <input
-              type="url"
-              value={editFormData.avatar}
-              onChange={(e) => setEditFormData({ ...editFormData, avatar: e.target.value })}
-              placeholder="https://..."
-              style={{ width: '100%' }}
-            />
-          </div>
+          <Input
+            label="Avatar Photo URL"
+            value={editFormData.avatar}
+            onChange={(e) => setEditFormData({ ...editFormData, avatar: e.target.value })}
+            placeholder="https://..."
+            icon={User}
+          />
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-            <button
-              type="button"
-              onClick={() => setIsEditModalOpen(false)}
-              className="btn btn-outline"
-            >
+          <div className="flex justify-end gap-2.5 pt-3">
+            <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="btn btn-primary"
-            >
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
+            </Button>
+            <Button type="submit" variant="primary" isLoading={saving}>
+              Save Changes
+            </Button>
           </div>
         </form>
       </Modal>

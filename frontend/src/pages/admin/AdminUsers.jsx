@@ -2,11 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
 import { employeeService } from '../../services/employeeService';
+import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import Select from '../../components/common/Select';
+import PageHeader from '../../components/common/PageHeader';
 import EmptyState from '../../components/common/EmptyState';
-import { Users, Search, Shield, Key, CheckCircle, XCircle, Edit } from 'lucide-react';
+import { TableSkeleton } from '../../components/common/Skeleton';
+import { Users, Search, Shield, Key, CheckCircle, XCircle, Edit, ShieldCheck } from 'lucide-react';
 import { formatDate } from '../../utils/formatters';
 
 export const AdminUsers = () => {
@@ -69,93 +74,98 @@ export const AdminUsers = () => {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header */}
-      <div>
-        <h1 style={{ fontSize: '1.65rem', fontWeight: 700 }}>User & Access Control Management</h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-          Assign system roles, grant elevated permissions, and manage authentication status
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="User Accounts & Access Directory"
+        subtitle="Configure organization credentials, grant elevated roles, and manage active account statuses"
+        breadcrumbs={['Administration', 'User Directory']}
+      />
 
-      {/* Search */}
-      <div className="card" style={{ padding: '1rem 1.25rem' }}>
-        <div style={{ position: 'relative', maxWidth: '400px' }}>
-          <Search
-            size={16}
-            style={{
-              position: 'absolute',
-              left: '0.85rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--text-dim)',
-            }}
-          />
-          <input
-            type="text"
-            placeholder="Search users by name or email..."
+      {/* Search Bar Card */}
+      <Card noPadding bodyClassName="p-4">
+        <div className="max-w-md">
+          <Input
+            placeholder="Search accounts by user name or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: '100%', paddingLeft: '2.5rem' }}
+            icon={Search}
           />
         </div>
-      </div>
+      </Card>
 
       {/* Users Table */}
-      <div className="card">
+      <Card
+        title={`Registered Accounts (${filteredUsers.length})`}
+        subtitle="Manage authorization tiers and credential access"
+      >
         {loading ? (
-          <LoadingSpinner message="Fetching user accounts..." />
+          <TableSkeleton rows={5} cols={6} />
         ) : filteredUsers.length === 0 ? (
-          <EmptyState title="No users found" description="No users match the search query." />
+          <EmptyState
+            icon={Users}
+            title="No user accounts found"
+            description="No users match your current search terms."
+          />
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+          <div className="saas-table-container">
+            <table className="saas-table">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-dim)' }}>
-                  <th style={{ padding: '0.75rem 1rem' }}>User</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Email Address</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Assigned Role</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Account Status</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Permissions</th>
+                <tr>
+                  <th>User Profile</th>
+                  <th>Department & Title</th>
+                  <th>Assigned Role</th>
+                  <th>Account Status</th>
+                  <th>Date Created</th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map((u) => (
-                  <tr key={u.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>
-                        {u.first_name} {u.last_name}
+                  <tr key={u.id}>
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30 flex items-center justify-center font-bold text-xs shrink-0">
+                          {u.first_name ? u.first_name[0].toUpperCase() : 'U'}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-slate-100">{u.first_name} {u.last_name}</div>
+                          <div className="text-xs text-slate-400">{u.email}</div>
+                        </div>
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{u.job_title}</div>
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>{u.email}</td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <Badge status={u.role}>{u.role}</Badge>
+                    <td>
+                      <div className="font-medium text-slate-200 text-xs">{u.job_title || 'Staff'}</div>
+                      <div className="text-[11px] text-slate-400">{u.department || 'General'}</div>
                     </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <Badge status={u.is_active ? 'ACTIVE' : 'INACTIVE'} />
+                    <td>
+                      <Badge
+                        variant={u.role === 'ADMIN' ? 'warning' : u.role === 'HR' ? 'success' : 'info'}
+                        size="xs"
+                      >
+                        {u.role}
+                      </Badge>
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
-                        <button
+                    <td>
+                      <Badge status={u.is_active ? 'ACTIVE' : 'INACTIVE'} size="xs" />
+                    </td>
+                    <td className="text-xs text-slate-400">{formatDate(u.hire_date || '2023-01-01')}</td>
+                    <td className="text-right">
+                      <div className="inline-flex items-center gap-1.5">
+                        <Button
                           onClick={() => setEditUser({ ...u })}
-                          className="btn btn-outline"
-                          style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}
+                          variant="ghost"
+                          size="xs"
+                          icon={Edit}
                         >
-                          <Shield size={14} /> Change Role
-                        </button>
-                        <button
+                          Role
+                        </Button>
+                        <Button
                           onClick={() => handleToggleStatus(u)}
-                          className="btn btn-outline"
-                          style={{
-                            padding: '0.35rem 0.6rem',
-                            fontSize: '0.75rem',
-                            borderColor: u.is_active ? 'var(--danger)' : 'var(--success)',
-                            color: u.is_active ? '#f87171' : '#34d399',
-                          }}
+                          variant={u.is_active ? 'danger' : 'success'}
+                          size="xs"
                         >
                           {u.is_active ? 'Deactivate' : 'Activate'}
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -164,45 +174,40 @@ export const AdminUsers = () => {
             </table>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Edit Role Modal */}
       <Modal
-        isOpen={!!editUser}
+        isOpen={Boolean(editUser)}
         onClose={() => setEditUser(null)}
-        title={`Edit Role & Permissions - ${editUser?.first_name} ${editUser?.last_name}`}
+        title="Modify User Authorization Tier"
+        subtitle={`Update security credentials for ${editUser?.first_name} ${editUser?.last_name}`}
       >
         {editUser && (
-          <form onSubmit={handleRoleChange} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                Account Email
-              </label>
-              <input type="text" disabled value={editUser.email} style={{ width: '100%', opacity: 0.7 }} />
+          <form onSubmit={handleRoleChange} className="space-y-4">
+            <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
+              <div className="text-xs text-slate-400">Account:</div>
+              <div className="font-bold text-slate-100 text-sm">{editUser.first_name} {editUser.last_name}</div>
+              <div className="text-xs text-slate-400">{editUser.email}</div>
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                System Access Tier
-              </label>
-              <select
-                value={editUser.role}
-                onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}
-                style={{ width: '100%' }}
-              >
-                <option value="EMPLOYEE">EMPLOYEE (Self-Service)</option>
-                <option value="HR">HR (Employee & Leave & Payroll Manager)</option>
-                <option value="ADMIN">ADMIN (Full System Administrator)</option>
-              </select>
-            </div>
+            <Select
+              label="Assigned System Role"
+              value={editUser.role}
+              onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}
+            >
+              <option value="EMPLOYEE">Employee (Self-Service)</option>
+              <option value="HR">HR Officer (Management & Payroll)</option>
+              <option value="ADMIN">System Administrator (Root Access)</option>
+            </Select>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
-              <button type="button" onClick={() => setEditUser(null)} className="btn btn-outline">
+            <div className="flex justify-end gap-2.5 pt-3">
+              <Button type="button" variant="outline" onClick={() => setEditUser(null)}>
                 Cancel
-              </button>
-              <button type="submit" className="btn btn-primary">
-                Save Permissions
-              </button>
+              </Button>
+              <Button type="submit" variant="primary">
+                Apply Role Changes
+              </Button>
             </div>
           </form>
         )}

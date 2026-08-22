@@ -1,41 +1,36 @@
 import React from 'react';
+import { Loader2 } from 'lucide-react';
 
-export const LoadingSpinner = ({ message = 'Loading...', size = 'md' }) => {
+export const LoadingSpinner = ({
+  message = 'Loading data...',
+  size = 'md',
+  fullPage = false,
+}) => {
   const sizeMap = {
-    sm: 20,
-    md: 36,
-    lg: 52,
+    sm: 'w-5 h-5',
+    md: 'w-8 h-8',
+    lg: 'w-12 h-12',
   };
-  const dimension = sizeMap[size] || sizeMap.md;
 
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '3rem 1rem',
-        gap: '1rem',
-      }}
-    >
-      <div
-        style={{
-          width: `${dimension}px`,
-          height: `${dimension}px`,
-          border: '3px solid rgba(99, 102, 241, 0.2)',
-          borderTopColor: 'var(--primary-500)',
-          borderRadius: '50%',
-          animation: 'spin 0.8s linear infinite',
-        }}
-      />
-      {message && (
-        <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-          {message}
-        </span>
-      )}
+  const content = (
+    <div className="flex flex-col items-center justify-center gap-3 text-center py-8">
+      <div className="relative">
+        <Loader2 className={`${sizeMap[size] || sizeMap.md} text-brand-500 animate-spin`} />
+        <div className="absolute inset-0 blur-sm bg-brand-500/20 rounded-full animate-pulse-subtle" />
+      </div>
+      {message && <p className="text-xs sm:text-sm text-slate-400 font-medium">{message}</p>}
     </div>
   );
+
+  if (fullPage) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        {content}
+      </div>
+    );
+  }
+
+  return content;
 };
 
 export default LoadingSpinner;

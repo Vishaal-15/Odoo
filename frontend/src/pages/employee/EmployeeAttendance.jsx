@@ -3,10 +3,14 @@ import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
 import { attendanceService } from '../../services/attendanceService';
 import StatCard from '../../components/common/StatCard';
+import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Button from '../../components/common/Button';
+import Select from '../../components/common/Select';
+import PageHeader from '../../components/common/PageHeader';
 import EmptyState from '../../components/common/EmptyState';
-import { Clock, Calendar, CheckCircle2, XCircle, AlertCircle, LogOut, Search, Filter } from 'lucide-react';
+import { TableSkeleton } from '../../components/common/Skeleton';
+import { Clock, Calendar, CheckCircle2, XCircle, LogOut, Filter, ShieldCheck } from 'lucide-react';
 import { formatDate, formatTime } from '../../utils/formatters';
 
 export const EmployeeAttendance = () => {
@@ -72,140 +76,119 @@ export const EmployeeAttendance = () => {
   });
 
   const isCheckedIn = todayRecord?.check_in && !todayRecord?.check_out;
-  const isCheckedOut = todayRecord?.check_out;
+  const isCheckedOut = Boolean(todayRecord?.check_out);
+
+  const presentCount = attendanceList.filter((r) => r.status === 'PRESENT').length;
+  const halfDayCount = attendanceList.filter((r) => r.status === 'HALF_DAY').length;
+  const leaveCount = attendanceList.filter((r) => r.status === 'LEAVE').length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header & Live Check-in Controls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.65rem', fontWeight: 700 }}>Attendance Management</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            Daily check-in / out timestamps, weekly view, and attendance logs
-          </p>
-        </div>
-
-        {/* Live Attendance Clock Action */}
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          {!isCheckedIn && !isCheckedOut && (
-            <button
-              onClick={handleCheckIn}
-              disabled={actionLoading}
-              className="btn btn-primary"
-              style={{ display: 'flex', gap: '0.5rem', padding: '0.625rem 1.25rem' }}
-            >
-              <Clock size={18} /> Record Check-In
-            </button>
-          )}
-
-          {isCheckedIn && (
-            <button
-              onClick={handleCheckOut}
-              disabled={actionLoading}
-              className="btn btn-outline"
-              style={{ display: 'flex', gap: '0.5rem', borderColor: 'var(--warning)', color: '#fbbf24' }}
-            >
-              <LogOut size={18} /> Record Check-Out
-            </button>
-          )}
-
-          {isCheckedOut && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--success)', fontWeight: 600, fontSize: '0.875rem' }}>
-              <CheckCircle2 size={18} /> Shift Completed for Today
-            </div>
-          )}
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Attendance & Timesheets"
+        subtitle="Track daily punch timestamps, total work hours, and presence records"
+        breadcrumbs={['Workspace', 'Attendance']}
+        actions={
+          <div className="flex items-center gap-2.5">
+            {!isCheckedIn && !isCheckedOut && (
+              <Button onClick={handleCheckIn} isLoading={actionLoading} variant="primary" size="sm" icon={Clock}>
+                Punch In
+              </Button>
+            )}
+            {isCheckedIn && (
+              <Button onClick={handleCheckOut} isLoading={actionLoading} variant="danger" size="sm" icon={LogOut}>
+                Punch Out
+              </Button>
+            )}
+          </div>
+        }
+      />
 
       {/* KPI Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
-          title="Today's Check-In"
-          value={todayRecord?.check_in ? formatTime(todayRecord.check_in) : 'Not Logged'}
-          subtitle={todayRecord ? `Status: ${todayRecord.status}` : 'Pending morning arrival'}
+          title="Full Days Present"
+          value={presentCount}
+          subtitle="Total verified regular shifts"
+          icon={CheckCircle2}
+          color="success"
+        />
+        <StatCard
+          title="Half-Day Logs"
+          value={halfDayCount}
+          subtitle="Partial shifts completed"
           icon={Clock}
-          color={isCheckedIn ? 'success' : 'warning'}
+          color="warning"
         />
         <StatCard
-          title="Today's Check-Out"
-          value={todayRecord?.check_out ? formatTime(todayRecord.check_out) : 'Active Shift'}
-          subtitle={todayRecord?.hours_worked || '0h recorded'}
-          icon={LogOut}
-          color="info"
-        />
-        <StatCard
-          title="Monthly Presence Rate"
-          value="95.2%"
-          subtitle="20 Days Present • 1 Half Day"
+          title="On-Leave Days"
+          value={leaveCount}
+          subtitle="Approved leaves taken"
           icon={Calendar}
-          color="primary"
+          color="info"
         />
       </div>
 
       {/* Attendance History Table Card */}
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Attendance History & Timesheets</h3>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Detailed logs of check-ins, check-outs, and duration</p>
-          </div>
-
-          {/* Filter Dropdown */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Filter size={16} color="var(--text-dim)" />
+      <Card
+        title="Timesheet History"
+        subtitle="Log of your daily clock-in and clock-out timestamps"
+        action={
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-slate-500" />
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              style={{ fontSize: '0.85rem' }}
+              className="bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
             >
-              <option value="ALL">All Statuses</option>
+              <option value="ALL">All Records</option>
               <option value="PRESENT">Present</option>
-              <option value="HALF_DAY">Half-Day</option>
-              <option value="LEAVE">Leave</option>
+              <option value="HALF_DAY">Half Day</option>
+              <option value="LEAVE">On Leave</option>
               <option value="ABSENT">Absent</option>
             </select>
           </div>
-        </div>
-
+        }
+      >
         {loading ? (
-          <LoadingSpinner message="Fetching attendance records..." />
+          <TableSkeleton rows={5} cols={5} />
         ) : filteredRecords.length === 0 ? (
-          <EmptyState title="No attendance logs found" description="No logs match your selected filter." />
+          <EmptyState
+            icon={Clock}
+            title="No attendance records found"
+            description="No logs match your selected filter criteria."
+          />
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+          <div className="saas-table-container">
+            <table className="saas-table">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-dim)' }}>
-                  <th style={{ padding: '0.75rem 1rem' }}>Date</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Check In</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Check Out</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Duration</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                <tr>
+                  <th>Date</th>
+                  <th>Check In</th>
+                  <th>Check Out</th>
+                  <th>Total Hours</th>
+                  <th>Status</th>
+                  <th>Remarks</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredRecords.map((item) => (
-                  <tr
-                    key={item.id}
-                    style={{
-                      borderBottom: '1px solid var(--border-subtle)',
-                      transition: 'background-color 0.15s ease',
-                    }}
-                  >
-                    <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: 'var(--text-main)' }}>
-                      {formatDate(item.date)}
+                {filteredRecords.map((r, idx) => (
+                  <tr key={idx}>
+                    <td className="font-medium text-slate-100">{formatDate(r.date)}</td>
+                    <td className="font-mono text-xs text-slate-300">
+                      {r.check_in ? formatTime(r.check_in) : '—'}
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
-                      {item.check_in ? formatTime(item.check_in) : '—'}
+                    <td className="font-mono text-xs text-slate-300">
+                      {r.check_out ? formatTime(r.check_out) : '—'}
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
-                      {item.check_out ? formatTime(item.check_out) : item.check_in ? 'In Progress' : '—'}
+                    <td className="font-semibold text-slate-200">
+                      {r.work_hours ? `${r.work_hours} hrs` : r.status === 'LEAVE' ? '0.0 hrs' : 'In Progress'}
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
-                      {item.hours_worked || '—'}
+                    <td>
+                      <Badge status={r.status} size="xs" />
                     </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <Badge status={item.status} />
+                    <td className="text-xs text-slate-400 max-w-xs truncate">
+                      {r.remarks || 'Regular workday'}
                     </td>
                   </tr>
                 ))}
@@ -213,7 +196,7 @@ export const EmployeeAttendance = () => {
             </table>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 };

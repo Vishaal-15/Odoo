@@ -1,106 +1,121 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import StatCard from '../../components/common/StatCard';
+import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
+import Button from '../../components/common/Button';
+import PageHeader from '../../components/common/PageHeader';
 import WorkforceStats from '../../components/analytics/WorkforceStats';
-import { ShieldCheck, Users, Server, Activity, Key, Database, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Users, Server, Activity, Key, Database, ArrowRight, ShieldAlert, Cpu } from 'lucide-react';
 
 export const AdminDashboard = () => {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700 }}>System Administration & Governance</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            System-level access control, RBAC policy enforcement, and infrastructure audit
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <Link to="/admin/users" className="btn btn-primary" style={{ display: 'flex', gap: '0.4rem' }}>
-            <Users size={16} /> Manage Roles & Users
-          </Link>
-          <Link to="/admin/system" className="btn btn-outline" style={{ display: 'flex', gap: '0.4rem' }}>
-            <Server size={16} /> System Diagnostics
-          </Link>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="System Administration & Governance"
+        subtitle="Global RBAC security policies, infrastructure telemetry, and enterprise user provisioning"
+        breadcrumbs={['Administration', 'Overview']}
+        actions={
+          <div className="flex items-center gap-2.5">
+            <Link to="/admin/users">
+              <Button variant="primary" size="sm" icon={Users}>
+                User Directory & Roles
+              </Button>
+            </Link>
+            <Link to="/admin/system">
+              <Button variant="secondary" size="sm" icon={Server}>
+                System Diagnostics
+              </Button>
+            </Link>
+          </div>
+        }
+      />
 
       {/* KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Registered Accounts"
           value="52 Users"
-          subtitle="3 Admins • 6 HR • 43 Employees"
+          subtitle="3 Admins • 6 HR • 43 Staff"
           icon={Users}
           color="primary"
         />
         <StatCard
           title="Security & RBAC"
           value="Enforced"
-          subtitle="JWT HS256 Token Rotation Active"
+          subtitle="JWT HS256 Token Rotation"
           icon={Key}
           color="success"
         />
         <StatCard
-          title="Database Cluster"
-          value="PostgreSQL 16"
-          subtitle="Connection Pool: Healthy"
+          title="Database State"
+          value="Healthy"
+          subtitle="SQLite/PostgreSQL Connection Pool"
           icon={Database}
           color="info"
         />
         <StatCard
-          title="API Response Time"
+          title="FastAPI Microservices"
           value="18 ms"
-          subtitle="FastAPI v1 Services Live"
+          subtitle="Zero degraded endpoints"
           icon={Activity}
           color="success"
         />
       </div>
 
       {/* Main Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* User Roles Card */}
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Role-Based Access Control (RBAC) Matrix</h3>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Permissions breakdown per authorization tier</p>
-            </div>
-            <Link to="/admin/users" style={{ fontSize: '0.8rem', color: 'var(--primary-500)', fontWeight: 500 }}>
-              Edit Roles
+        <Card
+          title="Role-Based Access Control (RBAC) Matrix"
+          subtitle="Global permissions per authorization tier"
+          headerIcon={ShieldCheck}
+          action={
+            <Link to="/admin/users" className="text-xs font-semibold text-brand-400 hover:text-brand-300">
+              Manage Roles
             </Link>
+          }
+        >
+          <div className="space-y-3">
+            <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800/80 flex items-center justify-between gap-3">
+              <div className="space-y-1">
+                <Badge variant="warning" size="xs">ADMINISTRATOR</Badge>
+                <p className="text-xs text-slate-400">
+                  Full root controls, user provisioning, global payroll & system configuration.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-slate-200 px-2 py-1 bg-slate-900 rounded border border-slate-700/60 shrink-0">
+                3 Active
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800/80 flex items-center justify-between gap-3">
+              <div className="space-y-1">
+                <Badge variant="success" size="xs">HR OFFICER</Badge>
+                <p className="text-xs text-slate-400">
+                  Employee records, leave approvals, attendance tracking, and payroll execution.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-slate-200 px-2 py-1 bg-slate-900 rounded border border-slate-700/60 shrink-0">
+                6 Active
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800/80 flex items-center justify-between gap-3">
+              <div className="space-y-1">
+                <Badge variant="info" size="xs">EMPLOYEE</Badge>
+                <p className="text-xs text-slate-400">
+                  Self-service portal, check-in/out, leave requests, read-only payslips.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-slate-200 px-2 py-1 bg-slate-900 rounded border border-slate-700/60 shrink-0">
+                43 Active
+              </span>
+            </div>
           </div>
+        </Card>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <Badge variant="warning">ADMIN</Badge>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>Full root controls, user provisioning, global payroll & system settings</div>
-              </div>
-              <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>3 Active</span>
-            </div>
-
-            <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <Badge variant="success">HR OFFICER</Badge>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>Employee management, leave approvals, attendance tracking, payroll execution</div>
-              </div>
-              <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>6 Active</span>
-            </div>
-
-            <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <Badge variant="info">EMPLOYEE</Badge>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>Self-service portal, check-in/out, leave applications, read-only payslips</div>
-              </div>
-              <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>43 Active</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Workforce Department Breakdown */}
+        {/* Workforce Department Distribution */}
         <WorkforceStats />
       </div>
     </div>

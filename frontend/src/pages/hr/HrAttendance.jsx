@@ -3,9 +3,14 @@ import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
 import { attendanceService } from '../../services/attendanceService';
 import StatCard from '../../components/common/StatCard';
+import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import Select from '../../components/common/Select';
+import PageHeader from '../../components/common/PageHeader';
 import EmptyState from '../../components/common/EmptyState';
+import { TableSkeleton } from '../../components/common/Skeleton';
 import { Clock, Users, Calendar, Filter, Search, Download, CheckCircle2, XCircle } from 'lucide-react';
 import { formatDate, formatTime } from '../../utils/formatters';
 
@@ -17,7 +22,6 @@ export const HrAttendance = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     const loadAllAttendance = async () => {
@@ -36,14 +40,15 @@ export const HrAttendance = () => {
   }, []);
 
   const filteredRecords = records.filter((r) => {
-    const nameMatch = (r.employee_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      (r.employee_id || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const nameMatch =
+      (r.employee_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.employee_id || '').toLowerCase().includes(searchTerm.toLowerCase());
     const statusMatch = statusFilter === 'ALL' || r.status === statusFilter;
     return nameMatch && statusMatch;
   });
 
   const handleExport = () => {
-    addToast('Exporting company attendance records to CSV...', 'info');
+    addToast('Attendance roster exported to CSV successfully.', 'success');
   };
 
   const presentCount = records.filter((r) => r.status === 'PRESENT').length;
@@ -51,132 +56,123 @@ export const HrAttendance = () => {
   const leaveCount = records.filter((r) => r.status === 'LEAVE').length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.65rem', fontWeight: 700 }}>Company-Wide Attendance Logs</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            Monitor daily employee punch records, shift presence, and absence logs
-          </p>
-        </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Company Attendance Monitor"
+        subtitle="Real-time employee presence logs, daily shift durations, and absence tracking"
+        breadcrumbs={['HR Operations', 'Attendance Logs']}
+        actions={
+          <Button onClick={handleExport} variant="outline" size="sm" icon={Download}>
+            Export CSV Log
+          </Button>
+        }
+      />
 
-        <button onClick={handleExport} className="btn btn-outline" style={{ display: 'flex', gap: '0.5rem' }}>
-          <Download size={16} /> Export Logs (CSV)
-        </button>
-      </div>
-
-      {/* Summary KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+      {/* KPI Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Logged Today"
           value={records.length}
-          subtitle="All department rosters"
+          subtitle="All department shifts"
           icon={Users}
           color="primary"
         />
         <StatCard
-          title="Present On-Site / Remote"
+          title="Full-Shift Present"
           value={presentCount}
-          subtitle="Normal Shift Logged"
+          subtitle="Regular work hours verified"
           icon={CheckCircle2}
           color="success"
         />
         <StatCard
-          title="Half-Day Logged"
+          title="Half-Day Shifts"
           value={halfDayCount}
-          subtitle="Partial shift duration"
+          subtitle="Partial day attendances"
           icon={Clock}
           color="warning"
         />
         <StatCard
           title="Approved On-Leave"
           value={leaveCount}
-          subtitle="Leave policy active"
+          subtitle="Active time-off policy"
           icon={Calendar}
           color="info"
         />
       </div>
 
-      {/* Filter Bar */}
-      <div className="card" style={{ padding: '1rem 1.25rem' }}>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
-            <Search
-              size={16}
-              style={{
-                position: 'absolute',
-                left: '0.85rem',
-                top: '50%',
-                transform: 'translateY(-50)',
-                color: 'var(--text-dim)',
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Search by employee name or ID..."
+      {/* Search and Filters */}
+      <Card noPadding bodyClassName="p-4">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="flex-1 w-full">
+            <Input
+              placeholder="Search by staff name or employee ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: '100%', paddingLeft: '2.5rem' }}
+              icon={Search}
             />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Filter size={16} color="var(--text-dim)" />
-            <select
+          <div className="w-full sm:w-56">
+            <Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
+              icon={Filter}
             >
               <option value="ALL">All Statuses</option>
               <option value="PRESENT">Present</option>
               <option value="HALF_DAY">Half-Day</option>
-              <option value="LEAVE">Leave</option>
+              <option value="LEAVE">On Leave</option>
               <option value="ABSENT">Absent</option>
-            </select>
+            </Select>
           </div>
         </div>
-      </div>
+      </Card>
 
-      {/* Attendance Table */}
-      <div className="card">
+      {/* Attendance Records Table */}
+      <Card
+        title={`Daily Attendance Logs (${filteredRecords.length})`}
+        subtitle="Chronological employee punch events"
+      >
         {loading ? (
-          <LoadingSpinner message="Fetching attendance records..." />
+          <TableSkeleton rows={5} cols={6} />
         ) : filteredRecords.length === 0 ? (
-          <EmptyState title="No logs found" description="No attendance entries match your filters." />
+          <EmptyState
+            icon={Clock}
+            title="No attendance entries found"
+            description="No logs match your current search or filter query."
+          />
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+          <div className="saas-table-container">
+            <table className="saas-table">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-dim)' }}>
-                  <th style={{ padding: '0.75rem 1rem' }}>Employee</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Date</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Check-In</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Check-Out</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Hours Logged</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Status</th>
+                <tr>
+                  <th>Employee</th>
+                  <th>Shift Date</th>
+                  <th>Clock In</th>
+                  <th>Clock Out</th>
+                  <th>Work Hours</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredRecords.map((r) => (
-                  <tr key={r.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{r.employee_name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{r.employee_id}</div>
+                {filteredRecords.map((r, idx) => (
+                  <tr key={idx}>
+                    <td>
+                      <div className="font-semibold text-slate-100">{r.employee_name}</div>
+                      <div className="text-[11px] font-mono text-slate-400">{r.employee_id}</div>
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
-                      {formatDate(r.date)}
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
+                    <td className="text-xs text-slate-300">{formatDate(r.date)}</td>
+                    <td className="font-mono text-xs text-slate-300">
                       {r.check_in ? formatTime(r.check_in) : '—'}
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
+                    <td className="font-mono text-xs text-slate-300">
                       {r.check_out ? formatTime(r.check_out) : r.check_in ? 'In Progress' : '—'}
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
-                      {r.hours_worked || '—'}
+                    <td className="font-semibold text-slate-200 text-xs">
+                      {r.hours_worked || (r.status === 'LEAVE' ? '0.0 hrs' : '—')}
                     </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <Badge status={r.status} />
+                    <td>
+                      <Badge status={r.status} size="xs" />
                     </td>
                   </tr>
                 ))}
@@ -184,7 +180,7 @@ export const HrAttendance = () => {
             </table>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 };

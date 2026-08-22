@@ -1,5 +1,6 @@
 import React from 'react';
 import { Layers } from 'lucide-react';
+import Button from './Button';
 
 export const EmptyState = ({
   icon: Icon = Layers,
@@ -7,46 +8,22 @@ export const EmptyState = ({
   description = 'There are no items to display at this moment.',
   actionLabel,
   onAction,
+  actionIcon,
+  className = '',
 }) => {
   return (
     <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '3rem 1.5rem',
-        textAlign: 'center',
-        backgroundColor: 'rgba(30, 41, 59, 0.4)',
-        borderRadius: 'var(--radius-md)',
-        border: '1px dashed var(--border-subtle)',
-      }}
+      className={`flex flex-col items-center justify-center p-8 sm:p-12 text-center rounded-xl border border-dashed border-slate-800 bg-slate-900/40 backdrop-blur-sm ${className}`}
     >
-      <div
-        style={{
-          width: '48px',
-          height: '48px',
-          borderRadius: '12px',
-          backgroundColor: 'rgba(148, 163, 184, 0.1)',
-          color: 'var(--text-muted)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: '1rem',
-        }}
-      >
-        <Icon size={24} />
+      <div className="w-12 h-12 rounded-2xl bg-slate-800/80 border border-slate-700/60 text-slate-400 flex items-center justify-center mb-4 shadow-sm">
+        <Icon className="w-6 h-6" />
       </div>
-      <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
-        {title}
-      </h3>
-      <p style={{ fontSize: '0.875rem', color: 'var(--text-dim)', maxWidth: '360px', marginBottom: actionLabel ? '1.25rem' : '0' }}>
-        {description}
-      </p>
+      <h3 className="text-sm sm:text-base font-semibold text-slate-100 mb-1">{title}</h3>
+      <p className="text-xs sm:text-sm text-slate-400 max-w-sm mb-5 leading-relaxed">{description}</p>
       {actionLabel && onAction && (
-        <button onClick={onAction} className="btn btn-primary" style={{ padding: '0.5rem 1rem' }}>
+        <Button onClick={onAction} icon={actionIcon} size="sm" variant="primary">
           {actionLabel}
-        </button>
+        </Button>
       )}
     </div>
   );

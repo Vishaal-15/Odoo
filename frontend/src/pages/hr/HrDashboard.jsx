@@ -4,13 +4,16 @@ import { useAuth } from '../../hooks/useAuth';
 import { analyticsService } from '../../services/analyticsService';
 import { leaveService } from '../../services/leaveService';
 import StatCard from '../../components/common/StatCard';
+import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Button from '../../components/common/Button';
+import PageHeader from '../../components/common/PageHeader';
+import { DashboardSkeleton } from '../../components/common/Skeleton';
 import AttendanceChart from '../../components/analytics/AttendanceChart';
 import LeaveBreakdownChart from '../../components/analytics/LeaveBreakdownChart';
 import PayrollSummaryCard from '../../components/analytics/PayrollSummaryCard';
 import AiInsightsCard from '../../components/ai/AiInsightsCard';
-import { Users, Clock, Calendar, DollarSign, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Users, Clock, Calendar, DollarSign, ArrowRight, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 
 export const HrDashboard = () => {
@@ -40,36 +43,35 @@ export const HrDashboard = () => {
   }, []);
 
   if (loading) {
-    return <LoadingSpinner message="Loading HR management dashboard..." />;
+    return <DashboardSkeleton />;
   }
 
   const { workforce, attendance, leaveStats, payrollSummary } = analytics || {};
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-      {/* Greeting Banner */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700 }}>
-            HR Executive Console
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            Workforce overview, pending approvals, and operational health metrics
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <Link to="/hr/employees" className="btn btn-outline" style={{ display: 'flex', gap: '0.4rem' }}>
-            <Users size={16} /> Directory
-          </Link>
-          <Link to="/hr/leaves" className="btn btn-primary" style={{ display: 'flex', gap: '0.4rem' }}>
-            <Calendar size={16} /> Review Approvals ({pendingLeaves.length})
-          </Link>
-        </div>
-      </div>
+    <div className="space-y-7">
+      <PageHeader
+        title="HR Executive Console"
+        subtitle="Workforce distribution, real-time presence, pending approval workflows, and operational metrics"
+        breadcrumbs={['HR Management', 'Dashboard']}
+        actions={
+          <div className="flex items-center gap-2.5">
+            <Link to="/hr/employees">
+              <Button variant="secondary" size="sm" icon={Users}>
+                Directory
+              </Button>
+            </Link>
+            <Link to="/hr/leaves">
+              <Button variant="primary" size="sm" icon={Calendar}>
+                Review Approvals ({pendingLeaves.length})
+              </Button>
+            </Link>
+          </div>
+        }
+      />
 
       {/* KPI Overview Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Workforce"
           value={workforce?.totalEmployees || 48}
@@ -85,9 +87,9 @@ export const HrDashboard = () => {
           color="success"
         />
         <StatCard
-          title="Pending Leave Approvals"
+          title="Pending Approvals"
           value={pendingLeaves.length}
-          subtitle="Action required by HR"
+          subtitle="Time-off decisions required"
           icon={Calendar}
           color={pendingLeaves.length > 0 ? 'warning' : 'info'}
         />
@@ -101,65 +103,59 @@ export const HrDashboard = () => {
       </div>
 
       {/* Charts Section */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <AttendanceChart data={attendance?.weeklyTrend || []} />
         <LeaveBreakdownChart />
       </div>
 
-      {/* Pending Approvals Table + AI Card */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
+      {/* Action Required & AI Intelligence Split */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pending Approvals Card */}
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Action Required: Leave Requests</h3>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Employee requests awaiting management decision</p>
-            </div>
-            <Link to="/hr/leaves" style={{ fontSize: '0.8rem', color: 'var(--primary-500)', fontWeight: 500 }}>
-              View All
+        <Card
+          title="Action Required: Leave Requests"
+          subtitle="Employee requests awaiting management decision"
+          headerIcon={Calendar}
+          action={
+            <Link to="/hr/leaves" className="text-xs font-semibold text-brand-400 hover:text-brand-300">
+              View All ({pendingLeaves.length})
             </Link>
-          </div>
-
+          }
+        >
           {pendingLeaves.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <CheckCircle2 size={32} color="var(--success)" style={{ margin: '0 auto 0.5rem' }} />
-              No pending leave requests!
+            <div className="py-8 text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+              <p className="text-sm font-semibold text-slate-200">No pending leave requests!</p>
+              <p className="text-xs text-slate-400">All employee applications are up to date.</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div className="space-y-3">
               {pendingLeaves.slice(0, 3).map((item) => (
                 <div
                   key={item.id}
-                  style={{
-                    padding: '0.875rem',
-                    backgroundColor: 'var(--bg-main)',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--border-subtle)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
+                  className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 hover:border-slate-700/80 transition-colors"
                 >
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{item.employee_name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  <div className="space-y-0.5">
+                    <div className="text-xs sm:text-sm font-bold text-slate-100">{item.employee_name}</div>
+                    <div className="text-xs text-slate-400">
                       {item.leave_type} • {formatDate(item.start_date)} ({item.days_count} days)
                     </div>
                   </div>
-                  <Link to="/hr/leaves" className="btn btn-outline" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>
-                    Review
+                  <Link to="/hr/leaves">
+                    <Button variant="outline" size="xs">
+                      Review
+                    </Button>
                   </Link>
                 </div>
               ))}
             </div>
           )}
-        </div>
+        </Card>
 
         {/* AI Workforce Intelligence Card */}
         <AiInsightsCard />
       </div>
 
-      {/* Payroll Quick Control */}
+      {/* Payroll Control Card */}
       <PayrollSummaryCard payrollSummary={payrollSummary} />
     </div>
   );

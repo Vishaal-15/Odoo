@@ -2,10 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
 import { employeeService } from '../../services/employeeService';
+import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import Select from '../../components/common/Select';
+import PageHeader from '../../components/common/PageHeader';
 import EmptyState from '../../components/common/EmptyState';
+import { TableSkeleton } from '../../components/common/Skeleton';
 import {
   Users,
   Search,
@@ -17,7 +22,9 @@ import {
   Building,
   Mail,
   Phone,
-  Calendar
+  Calendar,
+  Building2,
+  CheckCircle2,
 } from 'lucide-react';
 import { formatDate } from '../../utils/formatters';
 
@@ -120,104 +127,88 @@ export const HrEmployees = () => {
   const departments = ['ALL', ...new Set(employees.map((e) => e.department).filter(Boolean))];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.65rem', fontWeight: 700 }}>Employee Directory & Management</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            Manage staff profiles, department assignments, and onboarding records
-          </p>
-        </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Employee Directory & Staff Records"
+        subtitle="Manage company staff profiles, department assignments, and onboarding records"
+        breadcrumbs={['HR Operations', 'Employee Records']}
+        actions={
+          <Button onClick={() => setIsAddModalOpen(true)} variant="primary" size="sm" icon={Plus}>
+            Onboard New Employee
+          </Button>
+        }
+      />
 
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="btn btn-primary"
-          style={{ display: 'flex', gap: '0.5rem' }}
-        >
-          <Plus size={18} /> Add New Employee
-        </button>
-      </div>
-
-      {/* Filter & Search Bar */}
-      <div className="card" style={{ padding: '1rem 1.25rem' }}>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
-            <Search
-              size={16}
-              style={{
-                position: 'absolute',
-                left: '0.85rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'var(--text-dim)',
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Search by name, email, or employee ID..."
+      {/* Filter and Search Bar Card */}
+      <Card noPadding bodyClassName="p-4">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="flex-1 w-full">
+            <Input
+              placeholder="Search by employee name, work email, or ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: '100%', paddingLeft: '2.5rem' }}
+              icon={Search}
             />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Filter size={16} color="var(--text-dim)" />
-            <select
+          <div className="w-full sm:w-64">
+            <Select
               value={selectedDept}
               onChange={(e) => setSelectedDept(e.target.value)}
-              style={{ minWidth: '180px' }}
+              icon={Filter}
             >
               {departments.map((dept) => (
                 <option key={dept} value={dept}>
                   {dept === 'ALL' ? 'All Departments' : dept}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
-      </div>
+      </Card>
 
-      {/* Employee Table */}
-      <div className="card">
+      {/* Employee List Table */}
+      <Card
+        title={`Staff Roster (${filteredEmployees.length})`}
+        subtitle="Active staff profiles and organizational roles"
+      >
         {loading ? (
-          <LoadingSpinner message="Fetching employee directory..." />
+          <TableSkeleton rows={5} cols={6} />
         ) : filteredEmployees.length === 0 ? (
           <EmptyState
             icon={Users}
             title="No employees found"
-            description="No staff members match the current search or department filter."
+            description="No staff members match the current search query or department filter."
           />
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+          <div className="saas-table-container">
+            <table className="saas-table">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-dim)' }}>
-                  <th style={{ padding: '0.75rem 1rem' }}>Employee</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Role & Dept</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Contact</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Joined Date</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Status</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Actions</th>
+                <tr>
+                  <th>Employee</th>
+                  <th>Role & Department</th>
+                  <th>Contact</th>
+                  <th>Joined Date</th>
+                  <th>Status</th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredEmployees.map((emp) => (
-                  <tr key={emp.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    {/* Employee avatar & name */}
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <tr key={emp.id}>
+                    {/* Avatar & Name */}
+                    <td>
+                      <div className="flex items-center gap-3">
                         <img
                           src={emp.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
                           alt={emp.first_name}
-                          style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }}
+                          className="w-9 h-9 rounded-xl object-cover border border-slate-700/60 shrink-0"
                         />
                         <div>
-                          <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                          <div className="font-semibold text-slate-100">
                             {emp.first_name} {emp.last_name}
                           </div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                          <div className="text-[11px] font-mono text-slate-400">
                             {emp.employee_id || `EMP-${emp.id}`}
                           </div>
                         </div>
@@ -225,46 +216,46 @@ export const HrEmployees = () => {
                     </td>
 
                     {/* Role & Dept */}
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ fontWeight: 500, color: 'var(--text-main)' }}>{emp.job_title || 'Staff'}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{emp.department || 'General'}</div>
+                    <td>
+                      <div className="font-medium text-slate-200">{emp.job_title || 'Staff'}</div>
+                      <div className="text-xs text-slate-400">{emp.department || 'General'}</div>
                     </td>
 
                     {/* Contact */}
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <div style={{ color: 'var(--text-muted)' }}>{emp.email}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{emp.phone || '—'}</div>
+                    <td>
+                      <div className="text-xs text-slate-300">{emp.email}</div>
+                      <div className="text-[11px] text-slate-500">{emp.phone || '—'}</div>
                     </td>
 
-                    {/* Joined date */}
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
+                    {/* Date */}
+                    <td className="text-xs text-slate-400">
                       {formatDate(emp.hire_date || '2023-01-01')}
                     </td>
 
                     {/* Status */}
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <Badge status={emp.is_active ? 'ACTIVE' : 'INACTIVE'} />
+                    <td>
+                      <Badge status={emp.is_active ? 'ACTIVE' : 'INACTIVE'} size="xs" />
                     </td>
 
                     {/* Actions */}
-                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
-                        <button
+                    <td className="text-right">
+                      <div className="inline-flex items-center gap-1.5">
+                        <Button
                           onClick={() => setViewEmployee(emp)}
-                          className="btn btn-outline"
-                          style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}
-                          title="View Profile"
+                          variant="ghost"
+                          size="xs"
+                          icon={Eye}
                         >
-                          <Eye size={14} /> View
-                        </button>
-                        <button
+                          View
+                        </Button>
+                        <Button
                           onClick={() => setEditEmployee({ ...emp })}
-                          className="btn btn-outline"
-                          style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}
-                          title="Edit Employee"
+                          variant="ghost"
+                          size="xs"
+                          icon={Edit}
                         >
-                          <Edit size={14} /> Edit
-                        </button>
+                          Edit
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -273,65 +264,70 @@ export const HrEmployees = () => {
             </table>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* View Employee Modal */}
       <Modal
-        isOpen={!!viewEmployee}
+        isOpen={Boolean(viewEmployee)}
         onClose={() => setViewEmployee(null)}
-        title="Employee Profile Details"
+        title="Employee Profile Card"
+        subtitle="Detailed staff credentials & contact records"
       >
         {viewEmployee && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-subtle)' }}>
+          <div className="space-y-5">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-950/60 border border-slate-800">
               <img
                 src={viewEmployee.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
                 alt=""
-                style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
+                className="w-14 h-14 rounded-xl object-cover border border-slate-700/60"
               />
-              <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>
+              <div className="space-y-1">
+                <div className="text-lg font-bold text-slate-100 font-sans">
                   {viewEmployee.first_name} {viewEmployee.last_name}
-                </h3>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                </div>
+                <div className="text-xs text-slate-400">
                   {viewEmployee.job_title} • {viewEmployee.department}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '2px' }}>
-                  ID: {viewEmployee.employee_id || `EMP-${viewEmployee.id}`} • Role: <Badge status={viewEmployee.role} />
+                <div className="text-xs text-slate-400 flex items-center gap-2">
+                  <span>ID: <strong className="text-slate-200">{viewEmployee.employee_id || `EMP-${viewEmployee.id}`}</strong></span>
+                  <span>•</span>
+                  <Badge status={viewEmployee.role} size="xs" />
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.85rem' }}>
-              <div>
-                <span style={{ color: 'var(--text-dim)', display: 'block' }}>Email Address</span>
-                <strong>{viewEmployee.email}</strong>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+              <div className="p-3 rounded-lg bg-slate-950/40 border border-slate-800">
+                <span className="text-slate-500 block text-xs">Work Email</span>
+                <span className="font-semibold text-slate-200">{viewEmployee.email}</span>
               </div>
-              <div>
-                <span style={{ color: 'var(--text-dim)', display: 'block' }}>Phone Number</span>
-                <strong>{viewEmployee.phone || '—'}</strong>
+              <div className="p-3 rounded-lg bg-slate-950/40 border border-slate-800">
+                <span className="text-slate-500 block text-xs">Phone Number</span>
+                <span className="font-semibold text-slate-200">{viewEmployee.phone || '—'}</span>
               </div>
-              <div>
-                <span style={{ color: 'var(--text-dim)', display: 'block' }}>Date of Joining</span>
-                <strong>{formatDate(viewEmployee.hire_date)}</strong>
+              <div className="p-3 rounded-lg bg-slate-950/40 border border-slate-800">
+                <span className="text-slate-500 block text-xs">Date of Joining</span>
+                <span className="font-semibold text-slate-200">{formatDate(viewEmployee.hire_date)}</span>
               </div>
-              <div>
-                <span style={{ color: 'var(--text-dim)', display: 'block' }}>Address</span>
-                <strong>{viewEmployee.address || '—'}</strong>
+              <div className="p-3 rounded-lg bg-slate-950/40 border border-slate-800">
+                <span className="text-slate-500 block text-xs">Residential Address</span>
+                <span className="font-semibold text-slate-200">{viewEmployee.address || '—'}</span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-              <button
+            <div className="flex justify-end gap-2.5 pt-2">
+              <Button
+                variant="primary"
+                icon={Edit}
+                size="sm"
                 onClick={() => {
                   const toEdit = { ...viewEmployee };
                   setViewEmployee(null);
                   setEditEmployee(toEdit);
                 }}
-                className="btn btn-primary"
               >
-                <Edit size={14} /> Edit Profile
-              </button>
+                Edit Staff Profile
+              </Button>
             </div>
           </div>
         )}
@@ -342,206 +338,137 @@ export const HrEmployees = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         title="Onboard New Employee"
-        maxWidth="600px"
+        subtitle="Add a staff profile to the organization database"
       >
-        <form onSubmit={handleAddEmployee} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                First Name
-              </label>
-              <input
-                type="text"
-                required
-                value={newEmployeeData.first_name}
-                onChange={(e) => setNewEmployeeData({ ...newEmployeeData, first_name: e.target.value })}
-                placeholder="Marcus"
-                style={{ width: '100%' }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                Last Name
-              </label>
-              <input
-                type="text"
-                required
-                value={newEmployeeData.last_name}
-                onChange={(e) => setNewEmployeeData({ ...newEmployeeData, last_name: e.target.value })}
-                placeholder="Brody"
-                style={{ width: '100%' }}
-              />
-            </div>
+        <form onSubmit={handleAddEmployee} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="First Name"
+              required
+              value={newEmployeeData.first_name}
+              onChange={(e) => setNewEmployeeData({ ...newEmployeeData, first_name: e.target.value })}
+              placeholder="Marcus"
+            />
+            <Input
+              label="Last Name"
+              required
+              value={newEmployeeData.last_name}
+              onChange={(e) => setNewEmployeeData({ ...newEmployeeData, last_name: e.target.value })}
+              placeholder="Brody"
+            />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                Work Email
-              </label>
-              <input
-                type="email"
-                required
-                value={newEmployeeData.email}
-                onChange={(e) => setNewEmployeeData({ ...newEmployeeData, email: e.target.value })}
-                placeholder="marcus@dayflow.internal"
-                style={{ width: '100%' }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                Role
-              </label>
-              <select
-                value={newEmployeeData.role}
-                onChange={(e) => setNewEmployeeData({ ...newEmployeeData, role: e.target.value })}
-                style={{ width: '100%' }}
-              >
-                <option value="EMPLOYEE">Employee</option>
-                <option value="HR">HR Officer</option>
-                <option value="ADMIN">System Administrator</option>
-              </select>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Work Email"
+              type="email"
+              required
+              value={newEmployeeData.email}
+              onChange={(e) => setNewEmployeeData({ ...newEmployeeData, email: e.target.value })}
+              placeholder="marcus@dayflow.com"
+            />
+            <Select
+              label="Role"
+              value={newEmployeeData.role}
+              onChange={(e) => setNewEmployeeData({ ...newEmployeeData, role: e.target.value })}
+            >
+              <option value="EMPLOYEE">Employee</option>
+              <option value="HR">HR Officer</option>
+              <option value="ADMIN">System Administrator</option>
+            </Select>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                Department
-              </label>
-              <input
-                type="text"
-                required
-                value={newEmployeeData.department}
-                onChange={(e) => setNewEmployeeData({ ...newEmployeeData, department: e.target.value })}
-                placeholder="Marketing & Growth"
-                style={{ width: '100%' }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                Job Title
-              </label>
-              <input
-                type="text"
-                required
-                value={newEmployeeData.job_title}
-                onChange={(e) => setNewEmployeeData({ ...newEmployeeData, job_title: e.target.value })}
-                placeholder="Marketing Lead"
-                style={{ width: '100%' }}
-              />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Department"
+              required
+              value={newEmployeeData.department}
+              onChange={(e) => setNewEmployeeData({ ...newEmployeeData, department: e.target.value })}
+              placeholder="Marketing & Growth"
+            />
+            <Input
+              label="Job Title"
+              required
+              value={newEmployeeData.job_title}
+              onChange={(e) => setNewEmployeeData({ ...newEmployeeData, job_title: e.target.value })}
+              placeholder="Marketing Lead"
+            />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-            <button type="button" onClick={() => setIsAddModalOpen(false)} className="btn btn-outline">
+          <div className="flex justify-end gap-2.5 pt-3">
+            <Button type="button" variant="outline" onClick={() => setIsAddModalOpen(false)}>
               Cancel
-            </button>
-            <button type="submit" disabled={saving} className="btn btn-primary">
-              {saving ? 'Onboarding...' : 'Onboard Employee'}
-            </button>
+            </Button>
+            <Button type="submit" variant="primary" isLoading={saving}>
+              Onboard Employee
+            </Button>
           </div>
         </form>
       </Modal>
 
       {/* Edit Employee Modal */}
       <Modal
-        isOpen={!!editEmployee}
+        isOpen={Boolean(editEmployee)}
         onClose={() => setEditEmployee(null)}
-        title="Edit Employee Details (Admin / HR)"
-        maxWidth="600px"
+        title="Edit Employee Details"
+        subtitle="Update employee role, department, and contact information"
       >
         {editEmployee && (
-          <form onSubmit={handleUpdateEmployee} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editEmployee.first_name}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, first_name: e.target.value })}
-                  style={{ width: '100%' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editEmployee.last_name}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, last_name: e.target.value })}
-                  style={{ width: '100%' }}
-                />
-              </div>
+          <form onSubmit={handleUpdateEmployee} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="First Name"
+                required
+                value={editEmployee.first_name}
+                onChange={(e) => setEditEmployee({ ...editEmployee, first_name: e.target.value })}
+              />
+              <Input
+                label="Last Name"
+                required
+                value={editEmployee.last_name}
+                onChange={(e) => setEditEmployee({ ...editEmployee, last_name: e.target.value })}
+              />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  Department
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editEmployee.department}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, department: e.target.value })}
-                  style={{ width: '100%' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  Job Title
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editEmployee.job_title}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, job_title: e.target.value })}
-                  style={{ width: '100%' }}
-                />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Department"
+                required
+                value={editEmployee.department}
+                onChange={(e) => setEditEmployee({ ...editEmployee, department: e.target.value })}
+              />
+              <Input
+                label="Job Title"
+                required
+                value={editEmployee.job_title}
+                onChange={(e) => setEditEmployee({ ...editEmployee, job_title: e.target.value })}
+              />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  Role
-                </label>
-                <select
-                  value={editEmployee.role}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, role: e.target.value })}
-                  style={{ width: '100%' }}
-                >
-                  <option value="EMPLOYEE">Employee</option>
-                  <option value="HR">HR Officer</option>
-                  <option value="ADMIN">System Administrator</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  Phone
-                </label>
-                <input
-                  type="text"
-                  value={editEmployee.phone || ''}
-                  onChange={(e) => setEditEmployee({ ...editEmployee, phone: e.target.value })}
-                  style={{ width: '100%' }}
-                />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Select
+                label="Role"
+                value={editEmployee.role}
+                onChange={(e) => setEditEmployee({ ...editEmployee, role: e.target.value })}
+              >
+                <option value="EMPLOYEE">Employee</option>
+                <option value="HR">HR Officer</option>
+                <option value="ADMIN">System Administrator</option>
+              </Select>
+              <Input
+                label="Phone"
+                value={editEmployee.phone || ''}
+                onChange={(e) => setEditEmployee({ ...editEmployee, phone: e.target.value })}
+              />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-              <button type="button" onClick={() => setEditEmployee(null)} className="btn btn-outline">
+            <div className="flex justify-end gap-2.5 pt-3">
+              <Button type="button" variant="outline" onClick={() => setEditEmployee(null)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={saving} className="btn btn-primary">
-                {saving ? 'Updating...' : 'Save Changes'}
-              </button>
+              </Button>
+              <Button type="submit" variant="primary" isLoading={saving}>
+                Save Changes
+              </Button>
             </div>
           </form>
         )}

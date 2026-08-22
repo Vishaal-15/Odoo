@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNotification } from '../../hooks/useNotification';
 import { analyticsService } from '../../services/analyticsService';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Card from '../../components/common/Card';
+import Button from '../../components/common/Button';
+import Badge from '../../components/common/Badge';
+import PageHeader from '../../components/common/PageHeader';
 import EmptyState from '../../components/common/EmptyState';
-import { FileText, Download, Filter, Calendar, CheckCircle2 } from 'lucide-react';
+import { TableSkeleton } from '../../components/common/Skeleton';
+import { FileText, Download, Calendar, CheckCircle2, Clock, Filter } from 'lucide-react';
 import { formatDate } from '../../utils/formatters';
 
 export const ReportsPage = () => {
@@ -40,111 +44,111 @@ export const ReportsPage = () => {
     }
   };
 
+  const quickExportTemplates = [
+    {
+      title: 'Monthly Attendance Register',
+      desc: 'Complete employee shift punch logs, presence rates, and absence breakdown',
+      type: 'Monthly Attendance',
+      format: 'csv',
+      badge: 'CSV Data',
+    },
+    {
+      title: 'Payroll Outlay Statement',
+      desc: 'Disbursement audit breakdown, tax withholdings, allowances, and net salaries',
+      type: 'Payroll Statement',
+      format: 'pdf',
+      badge: 'PDF Report',
+    },
+    {
+      title: 'Leave Balances & Quota Audit',
+      desc: 'Annual leave quotas, active utilization records by employee & division',
+      type: 'Leave Audit',
+      format: 'csv',
+      badge: 'CSV Data',
+    },
+  ];
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1000px' }}>
-      {/* Header */}
-      <div>
-        <h1 style={{ fontSize: '1.65rem', fontWeight: 700 }}>Corporate Reports Generator</h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-          Generate, audit, and export official attendance registers, payroll summaries, and time-off audits
-        </p>
-      </div>
+    <div className="space-y-6 max-w-5xl">
+      <PageHeader
+        title="Corporate Reports & Data Exports"
+        subtitle="Generate, audit, and export official attendance registers, payroll statements, and time-off audits"
+        breadcrumbs={['Intelligence', 'Reports']}
+      />
 
       {/* Quick Export Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.25rem' }}>Attendance Register</h4>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: '1rem' }}>Full monthly employee check-in & absence log</p>
-          </div>
-          <button
-            onClick={() => handleExportReport('Monthly Attendance', 'csv')}
-            disabled={exporting}
-            className="btn btn-outline"
-            style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', fontSize: '0.8rem' }}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {quickExportTemplates.map((tpl, idx) => (
+          <Card
+            key={idx}
+            className="flex flex-col justify-between"
+            title={tpl.title}
+            action={<Badge variant="brand" size="xs">{tpl.badge}</Badge>}
           >
-            <Download size={14} /> Export CSV
-          </button>
-        </div>
-
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.25rem' }}>Payroll Outlay Statement</h4>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: '1rem' }}>Disbursement breakdown, tax withholdings, net pay</p>
-          </div>
-          <button
-            onClick={() => handleExportReport('Payroll Statement', 'pdf')}
-            disabled={exporting}
-            className="btn btn-outline"
-            style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', fontSize: '0.8rem' }}
-          >
-            <Download size={14} /> Export PDF
-          </button>
-        </div>
-
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.25rem' }}>Leave Balances Audit</h4>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: '1rem' }}>Annual leave utilization by employee & department</p>
-          </div>
-          <button
-            onClick={() => handleExportReport('Leave Audit', 'csv')}
-            disabled={exporting}
-            className="btn btn-outline"
-            style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', fontSize: '0.8rem' }}
-          >
-            <Download size={14} /> Export CSV
-          </button>
-        </div>
+            <p className="text-xs text-slate-400 mb-4 leading-relaxed">{tpl.desc}</p>
+            <Button
+              onClick={() => handleExportReport(tpl.type, tpl.format)}
+              isLoading={exporting}
+              variant="outline"
+              size="sm"
+              className="w-full justify-center"
+              icon={Download}
+            >
+              Export {tpl.format.toUpperCase()}
+            </Button>
+          </Card>
+        ))}
       </div>
 
-      {/* Reports History */}
-      <div className="card">
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1.25rem' }}>
-          Generated Reports Archive
-        </h3>
-
+      {/* Generated Reports Table Card */}
+      <Card
+        title="Archived Compliance Reports & Exports"
+        subtitle="Historical audit log of generated corporate reports"
+        headerIcon={FileText}
+      >
         {loading ? (
-          <LoadingSpinner message="Loading reports registry..." />
+          <TableSkeleton rows={4} cols={5} />
         ) : reports.length === 0 ? (
-          <EmptyState title="No archived reports" description="Generated reports will appear in this registry." />
+          <EmptyState
+            icon={FileText}
+            title="No report logs"
+            description="Generated reports will be archived here for reference."
+          />
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+          <div className="saas-table-container">
+            <table className="saas-table">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-dim)' }}>
-                  <th style={{ padding: '0.75rem 1rem' }}>Report Title</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Category</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Generated Date</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Format</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Download</th>
+                <tr>
+                  <th>Report Title</th>
+                  <th>Category</th>
+                  <th>Generated Date</th>
+                  <th>File Size</th>
+                  <th>Status</th>
+                  <th className="text-right">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {reports.map((rep) => (
-                  <tr key={rep.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: 'var(--text-main)' }}>
-                      {rep.title}
+                {reports.map((r, idx) => (
+                  <tr key={idx}>
+                    <td className="font-semibold text-slate-100 flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-brand-400 shrink-0" />
+                      <span>{r.name}</span>
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
-                      {rep.type}
+                    <td className="text-xs text-slate-300">{r.category}</td>
+                    <td className="text-xs text-slate-400">{formatDate(r.date)}</td>
+                    <td className="text-xs text-slate-400 font-mono">{r.size}</td>
+                    <td>
+                      <Badge status={r.status} size="xs" />
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
-                      {formatDate(rep.date)}
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(99, 102, 241, 0.15)', color: 'var(--primary-100)' }}>
-                        {rep.format}
-                      </span>
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                      <button
-                        onClick={() => handleExportReport(rep.title, rep.format)}
-                        className="btn btn-outline"
-                        style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem' }}
+                    <td className="text-right">
+                      <Button
+                        onClick={() => handleExportReport(r.name, 'pdf')}
+                        variant="ghost"
+                        size="xs"
+                        icon={Download}
                       >
-                        <Download size={14} /> Download
-                      </button>
+                        Download
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -152,7 +156,7 @@ export const ReportsPage = () => {
             </table>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 };

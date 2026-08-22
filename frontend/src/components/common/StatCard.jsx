@@ -1,62 +1,95 @@
 import React from 'react';
+import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
-export const StatCard = ({ title, value, subtitle, icon: Icon, trend, color = 'primary' }) => {
+export const StatCard = ({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  trend,
+  color = 'primary',
+  className = '',
+  onClick,
+}) => {
   const colorMap = {
-    primary: { iconBg: 'rgba(99, 102, 241, 0.15)', iconColor: '#818cf8' },
-    success: { iconBg: 'rgba(16, 185, 129, 0.15)', iconColor: '#34d399' },
-    warning: { iconBg: 'rgba(245, 158, 11, 0.15)', iconColor: '#fbbf24' },
-    danger: { iconBg: 'rgba(239, 68, 68, 0.15)', iconColor: '#f87171' },
-    info: { iconBg: 'rgba(59, 130, 246, 0.15)', iconColor: '#60a5fa' },
+    primary: {
+      bg: 'bg-brand-500/10',
+      text: 'text-brand-400',
+      border: 'border-brand-500/20',
+      glow: 'group-hover:border-brand-500/40',
+    },
+    success: {
+      bg: 'bg-emerald-500/10',
+      text: 'text-emerald-400',
+      border: 'border-emerald-500/20',
+      glow: 'group-hover:border-emerald-500/40',
+    },
+    warning: {
+      bg: 'bg-amber-500/10',
+      text: 'text-amber-400',
+      border: 'border-amber-500/20',
+      glow: 'group-hover:border-amber-500/40',
+    },
+    danger: {
+      bg: 'bg-rose-500/10',
+      text: 'text-rose-400',
+      border: 'border-rose-500/20',
+      glow: 'group-hover:border-rose-500/40',
+    },
+    info: {
+      bg: 'bg-sky-500/10',
+      text: 'text-sky-400',
+      border: 'border-sky-500/20',
+      glow: 'group-hover:border-sky-500/40',
+    },
   };
 
   const scheme = colorMap[color] || colorMap.primary;
 
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>
-          {title}
-        </span>
+    <div
+      onClick={onClick}
+      className={`group relative overflow-hidden bg-slate-900/80 border border-slate-800/80 rounded-xl p-5 shadow-card backdrop-blur-md transition-all duration-200 hover:border-slate-700 hover:shadow-card-hover hover:-translate-y-0.5 ${
+        onClick ? 'cursor-pointer' : ''
+      } ${className}`}
+    >
+      {/* Top row: Title and Icon */}
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs sm:text-sm font-medium text-slate-400 truncate">{title}</span>
         {Icon && (
           <div
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '8px',
-              backgroundColor: scheme.iconBg,
-              color: scheme.iconColor,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${scheme.bg} ${scheme.text} ${scheme.border} transition-colors duration-200`}
           >
-            <Icon size={18} />
+            <Icon className="w-4 h-4" />
           </div>
         )}
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-        <span style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-main)' }}>
+      {/* Metric value and trend */}
+      <div className="mt-3 flex items-baseline gap-2.5 flex-wrap">
+        <span className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-100 font-sans">
           {value}
         </span>
         {trend && (
           <span
-            style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              color: trend.isPositive ? 'var(--success)' : 'var(--danger)',
-            }}
+            className={`inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded ${
+              trend.isPositive
+                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'
+            }`}
           >
-            {trend.isPositive ? '↑' : '↓'} {trend.text}
+            {trend.isPositive ? (
+              <ArrowUpRight className="w-3 h-3" />
+            ) : (
+              <ArrowDownRight className="w-3 h-3" />
+            )}
+            <span>{trend.text}</span>
           </span>
         )}
       </div>
 
-      {subtitle && (
-        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-          {subtitle}
-        </span>
-      )}
+      {/* Subtitle / Context */}
+      {subtitle && <p className="text-xs text-slate-500 mt-1.5 line-clamp-1">{subtitle}</p>}
     </div>
   );
 };

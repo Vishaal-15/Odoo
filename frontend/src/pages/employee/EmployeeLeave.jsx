@@ -3,11 +3,17 @@ import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
 import { leaveService } from '../../services/leaveService';
 import StatCard from '../../components/common/StatCard';
+import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import Select from '../../components/common/Select';
+import Textarea from '../../components/common/Textarea';
+import PageHeader from '../../components/common/PageHeader';
 import EmptyState from '../../components/common/EmptyState';
-import { Calendar, Plus, Clock, CheckCircle2, XCircle, AlertCircle, FileText } from 'lucide-react';
+import { TableSkeleton } from '../../components/common/Skeleton';
+import { Calendar, Plus, Clock, CheckCircle2, XCircle, AlertCircle, FileText, Info } from 'lucide-react';
 import { formatDate, calculateDaysBetween } from '../../utils/formatters';
 
 export const EmployeeLeave = () => {
@@ -60,7 +66,7 @@ export const EmployeeLeave = () => {
     try {
       const newLeave = await leaveService.applyLeave({
         ...formData,
-        employee_id: user?.employee_id || 'EMP-003',
+        employee_id: user?.employee_id || 'EMP003',
         employee_name: `${user?.first_name} ${user?.last_name}`,
         days_count: days,
       });
@@ -76,98 +82,93 @@ export const EmployeeLeave = () => {
     }
   };
 
-  const calculatedDays = (formData.start_date && formData.end_date)
-    ? calculateDaysBetween(formData.start_date, formData.end_date)
-    : 0;
+  const calculatedDays =
+    formData.start_date && formData.end_date
+      ? calculateDaysBetween(formData.start_date, formData.end_date)
+      : 0;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.65rem', fontWeight: 700 }}>Leave & Time-Off Management</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            Submit time-off applications, monitor balances, and track approval status
-          </p>
-        </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Leave & Time-Off Management"
+        subtitle="Submit time-off requests, monitor leave quotas, and track approval status"
+        breadcrumbs={['Workspace', 'Leave Requests']}
+        actions={
+          <Button onClick={() => setIsApplyModalOpen(true)} variant="primary" size="sm" icon={Plus}>
+            Apply for Time Off
+          </Button>
+        }
+      />
 
-        <button
-          onClick={() => setIsApplyModalOpen(true)}
-          className="btn btn-primary"
-          style={{ display: 'flex', gap: '0.5rem' }}
-        >
-          <Plus size={18} /> Apply for Leave
-        </button>
-      </div>
+      {/* Leave Quota Balances Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {leaveBalances.map((bal, idx) => (
+          <div
+            key={idx}
+            className="p-5 rounded-xl bg-slate-900/80 border border-slate-800/80 shadow-card backdrop-blur-md space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-300">{bal.type}</span>
+              <Calendar className="w-4 h-4 text-brand-400" />
+            </div>
 
-      {/* Leave Balance Overview Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-        {leaveBalances.map((b, idx) => (
-          <div key={idx} className="card" style={{ padding: '1.25rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>{b.type}</span>
-              <Calendar size={16} color="var(--primary-500)" />
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold text-slate-100 font-sans">{bal.remaining}</span>
+              <span className="text-xs text-slate-400">/ {bal.total} days remaining</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>{b.remaining}</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>days left</span>
+
+            {/* Progress bar */}
+            <div className="w-full bg-slate-950/80 h-1.5 rounded-full overflow-hidden border border-slate-800/60">
+              <div
+                style={{ width: `${Math.min(100, (bal.used / bal.total) * 100)}%` }}
+                className="h-full bg-brand-500 rounded-full transition-all"
+              />
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-              {b.used} used of {b.total} allocated
-            </div>
+            <div className="text-[11px] text-slate-400 font-medium">{bal.used} days utilized this year</div>
           </div>
         ))}
       </div>
 
-      {/* Leave Requests Table */}
-      <div className="card">
-        <div style={{ marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>My Leave Applications</h3>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Full history of your submitted time-off requests</p>
-        </div>
-
+      {/* Leave Applications History */}
+      <Card title="Time-Off Request History" subtitle="Record of all submitted leave requests and decisions">
         {loading ? (
-          <LoadingSpinner message="Loading leave applications..." />
+          <TableSkeleton rows={4} cols={5} />
         ) : leaveRequests.length === 0 ? (
           <EmptyState
-            title="No leave requests submitted yet"
-            description="You currently have no pending or past leave requests."
+            icon={Calendar}
+            title="No leave requests filed"
+            description="You have not submitted any time-off applications yet."
             actionLabel="Apply for Leave"
             onAction={() => setIsApplyModalOpen(true)}
+            actionIcon={Plus}
           />
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+          <div className="saas-table-container">
+            <table className="saas-table">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-dim)' }}>
-                  <th style={{ padding: '0.75rem 1rem' }}>Leave Type</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Dates</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Duration</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Reason</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Status</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Reviewer Remarks</th>
+                <tr>
+                  <th>Leave Type</th>
+                  <th>Duration / Dates</th>
+                  <th>Days Count</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Manager Feedback</th>
                 </tr>
               </thead>
               <tbody>
-                {leaveRequests.map((item) => (
-                  <tr key={item.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    <td style={{ padding: '0.75rem 1rem', fontWeight: 600, color: 'var(--text-main)' }}>
-                      {item.leave_type}
+                {leaveRequests.map((l, idx) => (
+                  <tr key={idx}>
+                    <td className="font-semibold text-slate-100">{l.leave_type}</td>
+                    <td className="text-xs text-slate-300">
+                      {formatDate(l.start_date)} <span className="text-slate-500">to</span> {formatDate(l.end_date)}
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
-                      {formatDate(item.start_date)} — {formatDate(item.end_date)}
+                    <td className="font-medium text-slate-200">{l.days_count} {l.days_count === 1 ? 'day' : 'days'}</td>
+                    <td className="text-xs text-slate-400 max-w-xs truncate">{l.reason}</td>
+                    <td>
+                      <Badge status={l.status} size="xs" />
                     </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)' }}>
-                      {item.days_count} {item.days_count === 1 ? 'day' : 'days'}
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', maxWidth: '240px' }}>
-                      {item.reason}
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem' }}>
-                      <Badge status={item.status} />
-                    </td>
-                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-dim)', fontSize: '0.8rem' }}>
-                      {item.admin_comments || (item.status === 'PENDING' ? 'Awaiting HR Review' : '—')}
+                    <td className="text-xs text-slate-400">
+                      {l.reviewer_comments || (l.status === 'PENDING' ? 'Awaiting HR review' : 'None provided')}
                     </td>
                   </tr>
                 ))}
@@ -175,94 +176,69 @@ export const EmployeeLeave = () => {
             </table>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Apply Leave Modal */}
       <Modal
         isOpen={isApplyModalOpen}
         onClose={() => setIsApplyModalOpen(false)}
-        title="Apply for Leave / Time-Off"
+        title="Apply for Time Off"
+        subtitle="Submit your time-off request for HR/manager approval"
       >
-        <form onSubmit={handleApplyLeave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-              Leave Type
-            </label>
-            <select
-              value={formData.leave_type}
-              onChange={(e) => setFormData({ ...formData, leave_type: e.target.value })}
-              style={{ width: '100%' }}
-            >
-              <option value="Paid Leave">Paid Vacation Leave</option>
-              <option value="Sick Leave">Sick / Medical Leave</option>
-              <option value="Casual Leave">Casual Personal Leave</option>
-              <option value="Unpaid Leave">Unpaid Leave</option>
-            </select>
-          </div>
+        <form onSubmit={handleApplyLeave} className="space-y-4">
+          <Select
+            label="Leave Type"
+            value={formData.leave_type}
+            onChange={(e) => setFormData({ ...formData, leave_type: e.target.value })}
+          >
+            <option value="Paid Leave">Paid Annual Leave</option>
+            <option value="Sick Leave">Medical / Sick Leave</option>
+            <option value="Casual Leave">Casual Time-Off</option>
+            <option value="Unpaid Leave">Unpaid Leave</option>
+          </Select>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                Start Date
-              </label>
-              <input
-                type="date"
-                required
-                value={formData.start_date}
-                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                style={{ width: '100%' }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                End Date
-              </label>
-              <input
-                type="date"
-                required
-                value={formData.end_date}
-                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                style={{ width: '100%' }}
-              />
-            </div>
-          </div>
-
-          {calculatedDays > 0 && (
-            <div style={{ padding: '0.5rem 0.75rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)', fontSize: '0.8rem', color: 'var(--primary-100)' }}>
-              Total Leave Requested: <strong>{calculatedDays} {calculatedDays === 1 ? 'day' : 'days'}</strong>
-            </div>
-          )}
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-              Reason / Remarks
-            </label>
-            <textarea
-              rows={3}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Start Date"
+              type="date"
               required
-              value={formData.reason}
-              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-              placeholder="Please provide details regarding your leave request..."
-              style={{ width: '100%' }}
+              value={formData.start_date}
+              onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+            />
+            <Input
+              label="End Date"
+              type="date"
+              required
+              value={formData.end_date}
+              onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-            <button
-              type="button"
-              onClick={() => setIsApplyModalOpen(false)}
-              className="btn btn-outline"
-            >
+          {calculatedDays > 0 && (
+            <div className="p-3 rounded-lg bg-brand-500/10 border border-brand-500/20 text-xs text-brand-300 flex items-center gap-2">
+              <Info className="w-4 h-4 text-brand-400 shrink-0" />
+              <span>
+                Total duration: <strong className="text-white">{calculatedDays} workdays</strong> requested
+              </span>
+            </div>
+          )}
+
+          <Textarea
+            label="Reason for Leave"
+            required
+            rows={3}
+            placeholder="Briefly state the reason for this time-off request..."
+            value={formData.reason}
+            onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+          />
+
+          <div className="flex justify-end gap-2.5 pt-3">
+            <Button type="button" variant="outline" onClick={() => setIsApplyModalOpen(false)}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={applying}
-              className="btn btn-primary"
-            >
-              {applying ? 'Submitting...' : 'Submit Leave Request'}
-            </button>
+            </Button>
+            <Button type="submit" variant="primary" isLoading={applying}>
+              Submit Application
+            </Button>
           </div>
         </form>
       </Modal>

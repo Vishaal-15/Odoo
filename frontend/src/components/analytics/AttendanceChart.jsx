@@ -1,4 +1,6 @@
 import React from 'react';
+import Card from '../common/Card';
+import { BarChart3 } from 'lucide-react';
 
 export const AttendanceChart = ({ data = [] }) => {
   const defaultData = [
@@ -13,76 +15,63 @@ export const AttendanceChart = ({ data = [] }) => {
   const maxVal = 50;
 
   return (
-    <div className="card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-        <div>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Weekly Attendance Trend</h3>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Workforce presence across current work week</p>
+    <Card
+      title="Weekly Attendance Trend"
+      subtitle="Presence vs absences across the current work week"
+      headerIcon={BarChart3}
+      action={
+        <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm bg-brand-500" />
+            <span className="text-slate-400">Present</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm bg-rose-500" />
+            <span className="text-slate-400">Absent</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm bg-amber-500" />
+            <span className="text-slate-400">Leave</span>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: 'var(--primary-500)' }} />
-            <span style={{ color: 'var(--text-muted)' }}>Present</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: 'var(--danger)' }} />
-            <span style={{ color: 'var(--text-muted)' }}>Absent</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: 'var(--warning)' }} />
-            <span style={{ color: 'var(--text-muted)' }}>Leave</span>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '160px', padding: '0 0.5rem', gap: '1rem' }}>
+      }
+    >
+      <div className="flex justify-between items-end h-44 pt-4 px-2 gap-3 sm:gap-6 border-b border-slate-800/60 pb-2">
         {chartData.map((item, idx) => {
-          const presentHeight = (item.present / maxVal) * 100;
-          const absentHeight = (item.absent / maxVal) * 100;
-          const leaveHeight = (item.leave / maxVal) * 100;
+          const presentHeight = Math.min(100, (item.present / maxVal) * 100);
+          const absentHeight = Math.min(100, (item.absent / maxVal) * 100);
+          const leaveHeight = Math.min(100, (item.leave / maxVal) * 100);
 
           return (
-            <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
-              <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '3px' }}>
+            <div key={idx} className="flex-1 flex flex-col items-center h-full group">
+              <div className="flex-1 w-full flex items-end justify-center gap-1 sm:gap-1.5">
+                {/* Present Bar */}
                 <div
                   title={`Present: ${item.present}`}
-                  style={{
-                    width: '30%',
-                    height: `${presentHeight}%`,
-                    backgroundColor: 'var(--primary-500)',
-                    borderRadius: '3px 3px 0 0',
-                    transition: 'height 0.4s ease',
-                  }}
+                  style={{ height: `${presentHeight}%` }}
+                  className="w-1/3 max-w-[14px] bg-brand-500 hover:bg-brand-400 rounded-t transition-all duration-300 shadow-sm"
                 />
+                {/* Absent Bar */}
                 <div
                   title={`Absent: ${item.absent}`}
-                  style={{
-                    width: '30%',
-                    height: `${absentHeight}%`,
-                    backgroundColor: 'var(--danger)',
-                    borderRadius: '3px 3px 0 0',
-                    transition: 'height 0.4s ease',
-                  }}
+                  style={{ height: `${absentHeight}%` }}
+                  className="w-1/3 max-w-[14px] bg-rose-500/80 hover:bg-rose-400 rounded-t transition-all duration-300"
                 />
+                {/* Leave Bar */}
                 <div
-                  title={`Leave: ${item.leave}`}
-                  style={{
-                    width: '30%',
-                    height: `${leaveHeight}%`,
-                    backgroundColor: 'var(--warning)',
-                    borderRadius: '3px 3px 0 0',
-                    transition: 'height 0.4s ease',
-                  }}
+                  title={`On Leave: ${item.leave}`}
+                  style={{ height: `${leaveHeight}%` }}
+                  className="w-1/3 max-w-[14px] bg-amber-500/80 hover:bg-amber-400 rounded-t transition-all duration-300"
                 />
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px' }}>
+              <span className="text-xs font-semibold text-slate-400 group-hover:text-slate-200 mt-2 transition-colors">
                 {item.day}
               </span>
             </div>
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 };
 

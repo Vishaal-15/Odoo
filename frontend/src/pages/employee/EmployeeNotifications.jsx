@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNotification } from '../../hooks/useNotification';
 import { notificationService } from '../../services/notificationService';
+import Card from '../../components/common/Card';
+import Button from '../../components/common/Button';
+import PageHeader from '../../components/common/PageHeader';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import EmptyState from '../../components/common/EmptyState';
-import { Bell, CheckCheck, Check, Calendar, DollarSign, Info } from 'lucide-react';
+import { Bell, CheckCheck, Check, Calendar, DollarSign, Info, Sparkles } from 'lucide-react';
 import { formatDate } from '../../utils/formatters';
 
 export const EmployeeNotifications = () => {
   const { addToast } = useNotification();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('ALL');
 
   const loadNotifications = async () => {
     setLoading(true);
@@ -32,7 +36,7 @@ export const EmployeeNotifications = () => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
     );
-    addToast('Marked as read', 'info');
+    addToast('Marked notification as read', 'info');
   };
 
   const handleMarkAllAsRead = async () => {
@@ -43,125 +47,114 @@ export const EmployeeNotifications = () => {
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
+  const filteredNotifs = notifications.filter((n) => {
+    if (filter === 'UNREAD') return !n.is_read;
+    return true;
+  });
+
   const getNotificationIcon = (type) => {
-    switch (type) {
+    switch (type?.toLowerCase()) {
       case 'leave':
-        return <Calendar size={18} color="#fbbf24" />;
+        return <Calendar className="w-4 h-4 text-amber-400" />;
       case 'payroll':
-        return <DollarSign size={18} color="#34d399" />;
+        return <DollarSign className="w-4 h-4 text-emerald-400" />;
       default:
-        return <Info size={18} color="#60a5fa" />;
+        return <Info className="w-4 h-4 text-sky-400" />;
     }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '900px' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.65rem', fontWeight: 700 }}>Notifications & Alerts</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            System updates, approval decisions, and corporate announcements
-          </p>
-        </div>
+    <div className="space-y-6 max-w-4xl">
+      <PageHeader
+        title="Notifications & Alerts"
+        subtitle="System alerts, time-off approval outcomes, and compensation notices"
+        breadcrumbs={['Workspace', 'Notifications']}
+        actions={
+          unreadCount > 0 && (
+            <Button onClick={handleMarkAllAsRead} variant="secondary" size="sm" icon={CheckCheck}>
+              Mark All as Read ({unreadCount})
+            </Button>
+          )
+        }
+      />
 
-        {unreadCount > 0 && (
-          <button
-            onClick={handleMarkAllAsRead}
-            className="btn btn-outline"
-            style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem' }}
-          >
-            <CheckCheck size={16} /> Mark All as Read ({unreadCount})
-          </button>
-        )}
-      </div>
-
-      {/* Notifications List */}
-      <div className="card">
+      {/* Main Notification Card */}
+      <Card
+        title="Inbox"
+        subtitle="Chronological stream of in-app notices"
+        action={
+          <div className="flex items-center gap-1.5 p-1 bg-slate-950/60 rounded-lg border border-slate-800">
+            <button
+              onClick={() => setFilter('ALL')}
+              className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                filter === 'ALL' ? 'bg-brand-600 text-white' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              All ({notifications.length})
+            </button>
+            <button
+              onClick={() => setFilter('UNREAD')}
+              className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                filter === 'UNREAD' ? 'bg-brand-600 text-white' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Unread ({unreadCount})
+            </button>
+          </div>
+        }
+      >
         {loading ? (
           <LoadingSpinner message="Loading notifications..." />
-        ) : notifications.length === 0 ? (
+        ) : filteredNotifs.length === 0 ? (
           <EmptyState
             icon={Bell}
             title="All caught up!"
-            description="You have no notifications or alerts at this time."
+            description={filter === 'UNREAD' ? 'No unread notifications.' : 'You have no notices at this time.'}
           />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {notifications.map((n) => (
+          <div className="space-y-3">
+            {filteredNotifs.map((n) => (
               <div
                 key={n.id}
-                style={{
-                  padding: '1rem',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: n.is_read ? 'var(--bg-main)' : 'rgba(99, 102, 241, 0.08)',
-                  border: `1px solid ${n.is_read ? 'var(--border-subtle)' : 'rgba(99, 102, 241, 0.3)'}`,
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'space-between',
-                  gap: '1rem',
-                  transition: 'background-color 0.2s ease',
-                }}
+                className={`p-4 rounded-xl border transition-all flex items-start justify-between gap-4 ${
+                  n.is_read
+                    ? 'bg-slate-950/40 border-slate-800/60 text-slate-300'
+                    : 'bg-brand-500/10 border-brand-500/30 text-slate-100 shadow-sm'
+                }`}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.875rem' }}>
-                  <div
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
+                <div className="flex items-start gap-3.5 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0 mt-0.5">
                     {getNotificationIcon(n.type)}
                   </div>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-sm font-semibold text-slate-100 truncate">
                         {n.title}
                       </span>
                       {!n.is_read && (
-                        <span
-                          style={{
-                            fontSize: '0.65rem',
-                            padding: '1px 6px',
-                            borderRadius: '9999px',
-                            backgroundColor: 'var(--primary-600)',
-                            color: '#ffffff',
-                            fontWeight: 700,
-                          }}
-                        >
-                          NEW
-                        </span>
+                        <span className="w-2 h-2 rounded-full bg-brand-400 shrink-0 ring-2 ring-slate-900" />
                       )}
                     </div>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                      {n.message}
-                    </p>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.5rem', display: 'block' }}>
-                      {formatDate(n.created_at)}
-                    </span>
+                    <p className="text-xs text-slate-400 leading-relaxed">{n.message}</p>
+                    <div className="text-[10px] text-slate-500 font-mono">{formatDate(n.created_at)}</div>
                   </div>
                 </div>
 
                 {!n.is_read && (
-                  <button
+                  <Button
                     onClick={() => handleMarkAsRead(n.id)}
-                    className="btn btn-outline"
-                    style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', flexShrink: 0 }}
-                    title="Mark as read"
+                    variant="ghost"
+                    size="xs"
+                    icon={Check}
                   >
-                    <Check size={14} />
-                  </button>
+                    Mark Read
+                  </Button>
                 )}
               </div>
             ))}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 };

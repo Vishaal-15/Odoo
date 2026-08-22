@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
-import { UserPlus, Mail, KeyRound, User, Briefcase, Hash } from 'lucide-react';
+import { UserPlus, Mail, KeyRound, User, Briefcase, Hash, Building2 } from 'lucide-react';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import Select from '../../components/common/Select';
+import ErrorAlert from '../../components/common/ErrorAlert';
 
 export const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -53,10 +57,10 @@ export const RegisterPage = () => {
         employee_id: formData.employee_id,
       });
 
-      addToast('Registration successful! Please log in.', 'success');
+      addToast('Registration successful! Please sign in with your credentials.', 'success');
       navigate('/login');
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setError(err.message || 'Registration failed. Please verify the input values.');
       addToast('Registration failed', 'error');
     } finally {
       setLoading(false);
@@ -64,211 +68,151 @@ export const RegisterPage = () => {
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'var(--bg-main)',
-        padding: '2rem 1rem',
-      }}
-    >
-      <div style={{ width: '100%', maxWidth: '520px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div
-            style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              backgroundColor: 'var(--primary-600)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: '1.25rem',
-              color: '#ffffff',
-              marginBottom: '1rem',
-            }}
-          >
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-[#0b0f19] relative overflow-hidden">
+      {/* Ambient background decoration */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-brand-600/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="w-full max-w-xl relative z-10 space-y-6">
+        {/* Brand Header */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white font-extrabold text-lg shadow-glow-brand mb-1">
             DF
           </div>
-          <h1 style={{ fontSize: '1.65rem', fontWeight: 700 }}>Employee Onboarding</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            Register new employee or HR account into Dayflow
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-100 font-sans">
+            Employee Onboarding
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400">
+            Create an enterprise account profile in Dayflow HRMS
           </p>
         </div>
 
-        <div className="card" style={{ padding: '2rem' }}>
-          {error && (
-            <div
-              style={{
-                padding: '0.75rem 1rem',
-                marginBottom: '1.25rem',
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'rgba(239, 68, 68, 0.15)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                color: '#fca5a5',
-                fontSize: '0.85rem',
-              }}
-            >
-              {error}
-            </div>
-          )}
+        {/* Card Form */}
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-5">
+          {error && <ErrorAlert message={error} onDismiss={() => setError('')} />}
 
-          <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  name="first_name"
-                  required
-                  value={formData.first_name}
-                  onChange={handleChange}
-                  placeholder="Jane"
-                  style={{ width: '100%' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  name="last_name"
-                  required
-                  value={formData.last_name}
-                  onChange={handleChange}
-                  placeholder="Doe"
-                  style={{ width: '100%' }}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  Employee ID
-                </label>
-                <input
-                  type="text"
-                  name="employee_id"
-                  required
-                  value={formData.employee_id}
-                  onChange={handleChange}
-                  placeholder="EMP-105"
-                  style={{ width: '100%' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  Account Role
-                </label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  style={{ width: '100%' }}
-                >
-                  <option value="EMPLOYEE">Employee</option>
-                  <option value="HR">HR Officer</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                Work Email Address
-              </label>
-              <input
-                type="email"
-                name="email"
+          <form onSubmit={handleRegister} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="First Name"
+                name="first_name"
                 required
-                value={formData.email}
+                value={formData.first_name}
                 onChange={handleChange}
-                placeholder="jane.doe@dayflow.internal"
-                style={{ width: '100%' }}
+                placeholder="Sarah"
+                icon={User}
+              />
+              <Input
+                label="Last Name"
+                name="last_name"
+                required
+                value={formData.last_name}
+                onChange={handleChange}
+                placeholder="Connor"
+                icon={User}
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  Department
-                </label>
-                <input
-                  type="text"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  placeholder="Engineering"
-                  style={{ width: '100%' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  Job Title
-                </label>
-                <input
-                  type="text"
-                  name="job_title"
-                  value={formData.job_title}
-                  onChange={handleChange}
-                  placeholder="Software Engineer"
-                  style={{ width: '100%' }}
-                />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Work Email"
+                name="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="sarah@dayflow.com"
+                icon={Mail}
+              />
+              <Input
+                label="Employee ID / Code"
+                name="employee_id"
+                required
+                value={formData.employee_id}
+                onChange={handleChange}
+                placeholder="EMP045"
+                icon={Hash}
+              />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  style={{ width: '100%' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.35rem' }}>
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  style={{ width: '100%' }}
-                />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Select
+                label="Department"
+                name="department"
+                value={formData.department}
+                onChange={handleChange}
+                icon={Building2}
+              >
+                <option value="Engineering">Engineering</option>
+                <option value="Product">Product & Design</option>
+                <option value="Human Resources">Human Resources</option>
+                <option value="Marketing">Marketing & Growth</option>
+                <option value="Finance">Finance & Operations</option>
+              </Select>
+
+              <Select
+                label="Access Role"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                icon={Briefcase}
+              >
+                <option value="EMPLOYEE">Employee (Self-service)</option>
+                <option value="HR">HR Officer (Management)</option>
+                <option value="ADMIN">System Administrator</option>
+              </Select>
             </div>
 
-            <button
+            <Input
+              label="Job Designation / Title"
+              name="job_title"
+              required
+              value={formData.job_title}
+              onChange={handleChange}
+              placeholder="Senior Full Stack Engineer"
+              icon={Briefcase}
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Password"
+                name="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                icon={KeyRound}
+              />
+              <Input
+                label="Confirm Password"
+                name="confirmPassword"
+                type="password"
+                required
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+                icon={KeyRound}
+              />
+            </div>
+
+            <Button
               type="submit"
-              disabled={loading}
-              className="btn btn-primary"
-              style={{ width: '100%', padding: '0.75rem', marginTop: '0.75rem', opacity: loading ? 0.7 : 1 }}
+              variant="primary"
+              size="md"
+              isLoading={loading}
+              className="w-full mt-2"
+              icon={UserPlus}
             >
-              {loading ? 'Creating Account...' : 'Complete Registration'}
-            </button>
+              {loading ? 'Submitting Registration...' : 'Complete Employee Registration'}
+            </Button>
           </form>
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+        {/* Login Footer */}
+        <div className="text-center text-xs text-slate-400">
           Already have an account?{' '}
-          <Link to="/login" style={{ color: 'var(--primary-500)', fontWeight: 600 }}>
-            Sign In
+          <Link to="/login" className="font-semibold text-brand-400 hover:text-brand-300 transition-colors">
+            Sign In here
           </Link>
         </div>
       </div>

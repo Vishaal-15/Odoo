@@ -13,49 +13,81 @@ import {
   FileText,
   LogOut,
   Settings,
-  Briefcase
+  Briefcase,
+  X,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
-export const Sidebar = () => {
+export const Sidebar = ({ mobileOpen = false, onCloseMobile = () => {} }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const role = user?.role || 'EMPLOYEE';
 
-  const getNavItems = () => {
+  const getNavSections = () => {
     switch (role) {
       case 'ADMIN':
         return [
-          { label: 'Admin Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-          { label: 'User Directory', path: '/admin/users', icon: Users },
-          { label: 'Employee Profiles', path: '/hr/employees', icon: Briefcase },
-          { label: 'Attendance Monitor', path: '/hr/attendance', icon: Clock },
-          { label: 'Leave Approvals', path: '/hr/leaves', icon: Calendar },
-          { label: 'Payroll Controls', path: '/hr/payroll', icon: DollarSign },
-          { label: 'Analytics Insights', path: '/analytics', icon: BarChart3 },
-          { label: 'Reports Generator', path: '/reports', icon: FileText },
-          { label: 'System Settings', path: '/admin/system', icon: Settings },
+          {
+            section: 'Administration',
+            items: [
+              { label: 'Admin Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+              { label: 'User Directory', path: '/admin/users', icon: Shield },
+              { label: 'System Settings', path: '/admin/system', icon: Settings },
+            ],
+          },
+          {
+            section: 'HR Operations',
+            items: [
+              { label: 'Employee Profiles', path: '/hr/employees', icon: Users },
+              { label: 'Attendance Monitor', path: '/hr/attendance', icon: Clock },
+              { label: 'Leave Approvals', path: '/hr/leaves', icon: Calendar },
+              { label: 'Payroll Controls', path: '/hr/payroll', icon: DollarSign },
+            ],
+          },
+          {
+            section: 'Intelligence',
+            items: [
+              { label: 'Analytics Insights', path: '/analytics', icon: BarChart3 },
+              { label: 'Reports Generator', path: '/reports', icon: FileText },
+            ],
+          },
         ];
       case 'HR':
         return [
-          { label: 'HR Dashboard', path: '/hr/dashboard', icon: LayoutDashboard },
-          { label: 'Employee Records', path: '/hr/employees', icon: Users },
-          { label: 'Attendance Logs', path: '/hr/attendance', icon: Clock },
-          { label: 'Leave Approvals', path: '/hr/leaves', icon: Calendar },
-          { label: 'Payroll Overview', path: '/hr/payroll', icon: DollarSign },
-          { label: 'HR Notifications', path: '/hr/notifications', icon: Bell },
-          { label: 'Workforce Analytics', path: '/analytics', icon: BarChart3 },
-          { label: 'Reports Export', path: '/reports', icon: FileText },
+          {
+            section: 'HR Core',
+            items: [
+              { label: 'HR Dashboard', path: '/hr/dashboard', icon: LayoutDashboard },
+              { label: 'Employee Records', path: '/hr/employees', icon: Users },
+              { label: 'Attendance Logs', path: '/hr/attendance', icon: Clock },
+              { label: 'Leave Approvals', path: '/hr/leaves', icon: Calendar },
+              { label: 'Payroll Overview', path: '/hr/payroll', icon: DollarSign },
+            ],
+          },
+          {
+            section: 'Intelligence & Comms',
+            items: [
+              { label: 'Workforce Analytics', path: '/analytics', icon: BarChart3 },
+              { label: 'Reports Export', path: '/reports', icon: FileText },
+              { label: 'HR Notifications', path: '/hr/notifications', icon: Bell },
+            ],
+          },
         ];
       case 'EMPLOYEE':
       default:
         return [
-          { label: 'Dashboard', path: '/employee/dashboard', icon: LayoutDashboard },
-          { label: 'My Profile', path: '/employee/profile', icon: User },
-          { label: 'Attendance Tracker', path: '/employee/attendance', icon: Clock },
-          { label: 'Leave Requests', path: '/employee/leave', icon: Calendar },
-          { label: 'Payslip & Salary', path: '/employee/payroll', icon: DollarSign },
-          { label: 'Notifications', path: '/employee/notifications', icon: Bell },
+          {
+            section: 'Workspace',
+            items: [
+              { label: 'Dashboard', path: '/employee/dashboard', icon: LayoutDashboard },
+              { label: 'My Profile', path: '/employee/profile', icon: User },
+              { label: 'Attendance', path: '/employee/attendance', icon: Clock },
+              { label: 'Leave Requests', path: '/employee/leave', icon: Calendar },
+              { label: 'Payslip & Salary', path: '/employee/payroll', icon: DollarSign },
+              { label: 'Notifications', path: '/employee/notifications', icon: Bell },
+            ],
+          },
         ];
     }
   };
@@ -65,144 +97,118 @@ export const Sidebar = () => {
     navigate('/login');
   };
 
-  const navItems = getNavItems();
+  const navSections = getNavSections();
 
   return (
-    <aside
-      style={{
-        width: '260px',
-        backgroundColor: 'var(--bg-surface)',
-        borderRight: '1px solid var(--border-subtle)',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        position: 'sticky',
-        top: 0,
-      }}
-    >
-      {/* Brand Header */}
-      <div
-        style={{
-          padding: '1.5rem 1.25rem',
-          borderBottom: '1px solid var(--border-subtle)',
-        }}
+    <>
+      {/* Mobile Backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden animate-fade-in"
+          onClick={onCloseMobile}
+        />
+      )}
+
+      {/* Sidebar Container */}
+      <aside
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-slate-900/95 border-r border-slate-800/80 flex flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div
-            style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '10px',
-              backgroundColor: 'var(--primary-600)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: '1rem',
-              color: '#ffffff',
-              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
-            }}
+        {/* Brand Header */}
+        <div className="flex items-center justify-between px-5 h-16 border-b border-slate-800/80 bg-slate-950/40">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center font-extrabold text-sm text-white shadow-glow-brand">
+              DF
+            </div>
+            <div>
+              <div className="font-bold text-sm tracking-tight text-slate-100 flex items-center gap-1.5">
+                Dayflow HRMS
+              </div>
+              <div className="text-[10px] uppercase font-semibold tracking-wider text-slate-400">
+                {role} Console
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={onCloseMobile}
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 lg:hidden"
           >
-            DF
-          </div>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.02em', color: 'var(--text-main)' }}>
-              Dayflow
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-              HRMS Workspace
-            </div>
-          </div>
+            <X className="w-5 h-5" />
+          </button>
         </div>
-      </div>
 
-      {/* Nav Menu */}
-      <nav
-        style={{
-          padding: '1.25rem 0.875rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.35rem',
-          flex: 1,
-          overflowY: 'auto',
-        }}
-      >
-        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-dim)', padding: '0.25rem 0.6rem', textTransform: 'uppercase' }}>
-          Navigation ({role})
-        </div>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              style={({ isActive }) => ({
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.625rem 0.875rem',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                color: isActive ? '#ffffff' : 'var(--text-muted)',
-                backgroundColor: isActive ? 'var(--primary-600)' : 'transparent',
-                transition: 'all 0.15s ease',
+        {/* Nav Sections */}
+        <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+          {navSections.map((sec, sIdx) => (
+            <div key={sIdx} className="space-y-1">
+              <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                {sec.section}
+              </div>
+              {sec.items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={onCloseMobile}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-150 group relative ${
+                        isActive
+                          ? 'bg-brand-600/90 text-white font-semibold shadow-sm'
+                          : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <Icon
+                          className={`w-4 h-4 shrink-0 transition-colors ${
+                            isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'
+                          }`}
+                        />
+                        <span className="truncate">{item.label}</span>
+                        {isActive && (
+                          <div className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r bg-white" />
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                );
               })}
-            >
-              <Icon size={18} />
-              <span>{item.label}</span>
-            </NavLink>
-          );
-        })}
-      </nav>
+            </div>
+          ))}
+        </nav>
 
-      {/* User Info & Logout Footer */}
-      <div
-        style={{
-          padding: '1rem 1.25rem',
-          borderTop: '1px solid var(--border-subtle)',
-          backgroundColor: 'rgba(15, 23, 42, 0.4)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', overflow: 'hidden' }}>
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                color: 'var(--primary-500)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 600,
-                fontSize: '0.8rem',
-                flexShrink: 0,
-              }}
+        {/* User Info & Sign Out Footer */}
+        <div className="p-3 border-t border-slate-800/80 bg-slate-950/40">
+          <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30 flex items-center justify-center font-bold text-xs shrink-0">
+                {user?.first_name ? user.first_name[0].toUpperCase() : 'U'}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-semibold text-slate-200 truncate">
+                  {user?.first_name || 'User'} {user?.last_name || ''}
+                </div>
+                <div className="text-[11px] text-slate-400 truncate">
+                  {user?.email || 'user@dayflow.com'}
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              title="Sign Out"
+              className="p-1.5 rounded-md text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0"
             >
-              {user?.first_name ? user.first_name[0] : 'U'}
-            </div>
-            <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-main)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                {user?.first_name} {user?.last_name}
-              </div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
-                {user?.role}
-              </div>
-            </div>
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
-
-        <button
-          onClick={handleLogout}
-          className="btn btn-outline"
-          style={{ width: '100%', padding: '0.4rem 0.6rem', fontSize: '0.8rem', display: 'flex', gap: '0.4rem', justifyContent: 'center' }}
-        >
-          <LogOut size={14} /> Sign Out
-        </button>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 };
 

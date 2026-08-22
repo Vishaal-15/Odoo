@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
-import { Shield, KeyRound, Mail, ArrowRight, UserCheck } from 'lucide-react';
+import { Mail, KeyRound, Shield, ArrowRight, Sparkles, CheckCircle2, UserCheck } from 'lucide-react';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import ErrorAlert from '../../components/common/ErrorAlert';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -22,7 +25,7 @@ export const LoginPage = () => {
       const profile = await login(email, password);
       addToast(`Welcome back, ${profile.first_name}!`, 'success');
 
-      // Role-based redirection
+      // Role-based routing
       if (profile.role === 'ADMIN') {
         navigate('/admin/dashboard');
       } else if (profile.role === 'HR') {
@@ -38,178 +41,97 @@ export const LoginPage = () => {
     }
   };
 
-  // Quick Account Switcher Helper for Hackathon testing
   const selectQuickAccount = (sampleEmail, samplePassword) => {
     setEmail(sampleEmail);
     setPassword(samplePassword);
+    setError('');
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'var(--bg-main)',
-        padding: '1.5rem',
-      }}
-    >
-      <div style={{ width: '100%', maxWidth: '440px' }}>
-        {/* Brand Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div
-            style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '14px',
-              backgroundColor: 'var(--primary-600)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: '1.4rem',
-              color: '#ffffff',
-              marginBottom: '1rem',
-              boxShadow: '0 8px 20px rgba(99, 102, 241, 0.4)',
-            }}
-          >
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-[#0b0f19] relative overflow-hidden">
+      {/* Background Decorative Gradients */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[350px] bg-brand-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-72 h-72 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="w-full max-w-md relative z-10 space-y-6">
+        {/* Brand Header */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white font-extrabold text-lg shadow-glow-brand mb-1">
             DF
           </div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.025em' }}>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-100 font-sans">
             Dayflow HRMS
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+          <p className="text-xs sm:text-sm text-slate-400">
             Sign in to access your enterprise workspace
           </p>
         </div>
 
-        {/* Card */}
-        <div className="card" style={{ padding: '2rem' }}>
-          {error && (
-            <div
-              style={{
-                padding: '0.75rem 1rem',
-                marginBottom: '1.25rem',
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'rgba(239, 68, 68, 0.15)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                color: '#fca5a5',
-                fontSize: '0.85rem',
-              }}
-            >
-              {error}
-            </div>
-          )}
+        {/* Card Form */}
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-5">
+          {error && <ErrorAlert message={error} onDismiss={() => setError('')} />}
 
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-main)' }}>
-                Work Email Address
-              </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@dayflow.internal"
-                  style={{ width: '100%', paddingLeft: '2.5rem' }}
-                />
-                <Mail
-                  size={16}
-                  style={{
-                    position: 'absolute',
-                    left: '0.85rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--text-dim)',
-                  }}
-                />
-              </div>
-            </div>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <Input
+              label="Work Email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@dayflow.com"
+              icon={Mail}
+            />
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-main)' }}>
-                Password
-              </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  style={{ width: '100%', paddingLeft: '2.5rem' }}
-                />
-                <KeyRound
-                  size={16}
-                  style={{
-                    position: 'absolute',
-                    left: '0.85rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--text-dim)',
-                  }}
-                />
-              </div>
-            </div>
+            <Input
+              label="Password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              icon={KeyRound}
+            />
 
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className="btn btn-primary"
-              style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem', opacity: loading ? 0.7 : 1 }}
+              variant="primary"
+              size="md"
+              isLoading={loading}
+              className="w-full mt-2"
+              icon={ArrowRight}
+              iconPosition="right"
             >
-              {loading ? 'Authenticating...' : 'Sign In'}
-            </button>
+              {loading ? 'Authenticating...' : 'Sign In to Workspace'}
+            </Button>
           </form>
 
-          {/* Quick Demo Credentials */}
-          <div style={{ marginTop: '1.75rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
-              Quick Demo Accounts:
-            </span>
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.6rem', flexWrap: 'wrap' }}>
+          {/* 1-Click Quick Demo Accounts */}
+          <div className="pt-4 border-t border-slate-800/80 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                1-Click Demo Accounts:
+              </span>
+              <span className="text-[10px] text-slate-400">Pre-seeded</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
-                onClick={() => selectQuickAccount('admin@dayflow.internal', 'password123')}
-                style={{
-                  fontSize: '0.75rem',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                  color: '#fbbf24',
-                  border: '1px solid rgba(245, 158, 11, 0.3)',
-                }}
+                onClick={() => selectQuickAccount('admin@dayflow.com', 'Admin@123')}
+                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/25 hover:bg-amber-500/20 hover:border-amber-500/40 transition-all text-center"
               >
                 Admin
               </button>
               <button
                 type="button"
-                onClick={() => selectQuickAccount('hr@dayflow.internal', 'password123')}
-                style={{
-                  fontSize: '0.75rem',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                  color: '#34d399',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                }}
+                onClick={() => selectQuickAccount('hr@dayflow.com', 'Hr@123')}
+                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all text-center"
               >
                 HR Officer
               </button>
               <button
                 type="button"
-                onClick={() => selectQuickAccount('employee@dayflow.internal', 'password123')}
-                style={{
-                  fontSize: '0.75rem',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  backgroundColor: 'rgba(59, 130, 246, 0.15)',
-                  color: '#60a5fa',
-                  border: '1px solid rgba(59, 130, 246, 0.3)',
-                }}
+                onClick={() => selectQuickAccount('employee@dayflow.com', 'Employee@123')}
+                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/25 hover:bg-sky-500/20 hover:border-sky-500/40 transition-all text-center"
               >
                 Employee
               </button>
@@ -217,11 +139,11 @@ export const LoginPage = () => {
           </div>
         </div>
 
-        {/* Link to Register */}
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-          Need to onboard a new employee?{' '}
-          <Link to="/register" style={{ color: 'var(--primary-500)', fontWeight: 600 }}>
-            Register here
+        {/* Register Footer */}
+        <div className="text-center text-xs text-slate-400">
+          Need to onboard a new employee profile?{' '}
+          <Link to="/register" className="font-semibold text-brand-400 hover:text-brand-300 transition-colors">
+            Register Account
           </Link>
         </div>
       </div>
