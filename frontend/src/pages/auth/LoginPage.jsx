@@ -154,12 +154,13 @@ export const LoginPage = () => {
               </button>
               <button
                 type="button"
-                onClick={() => selectQuickAccount('OISHBA20230002', 'Hr@123')}
+                onClick={() => selectQuickAccount('OISEKU20230002', 'Hr@123')}
                 className="px-2 py-2 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all text-center flex flex-col items-center gap-0.5"
               >
                 <span>HR Officer</span>
-                <span className="text-[9px] text-emerald-400 font-mono">OISHBA20230002</span>
+                <span className="text-[9px] text-emerald-400 font-mono">OISEKU20230002</span>
               </button>
+
               <button
                 type="button"
                 onClick={() => selectQuickAccount('OISASA20230003', 'Employee@123')}

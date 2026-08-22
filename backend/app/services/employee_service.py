@@ -15,7 +15,15 @@ class EmployeeService:
         self.audit_repo = AuditRepository(db)
 
     def get_employee(self, user_id: int, current_user: User) -> User:
+        # Check permissions: Employee can only view own profile
+        if current_user.role == RoleEnum.EMPLOYEE and current_user.id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: You can only view your own profile.",
+            )
+
         user = self.user_repo.get_by_id(user_id)
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
