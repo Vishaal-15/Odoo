@@ -260,9 +260,21 @@ export const HrEmployees = () => {
                   </div>
 
                   <div className="space-y-0.5 pr-6">
-                    <h3 className="font-bold text-slate-100 group-hover:text-purple-300 transition-colors text-sm line-clamp-1">
-                      {emp.first_name} {emp.last_name}
-                    </h3>
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="font-bold text-slate-100 group-hover:text-purple-300 transition-colors text-sm line-clamp-1">
+                        {emp.first_name} {emp.last_name}
+                      </h3>
+                      {emp.role === 'ADMIN' && (
+                        <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">
+                          ADMIN
+                        </span>
+                      )}
+                      {emp.role === 'HR' && (
+                        <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">
+                          HR
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-slate-400 line-clamp-1">
                       {emp.job_title || emp.designation || 'Staff Member'}
                     </p>
@@ -270,6 +282,7 @@ export const HrEmployees = () => {
                       {emp.employee_id || `EMP-${emp.id}`}
                     </p>
                   </div>
+
                 </div>
 
                 {/* Card Footer: Department & Contact */}
