@@ -114,8 +114,9 @@ export const EmployeeProfile = () => {
         company_name: data.company_name || 'Odoo India',
         department: data.department || 'Engineering',
         job_title: data.job_title || data.designation || 'Software Engineer',
-        manager_name: data.manager_name || 'Kanagaraj R',
+        manager_name: data.manager_name || 'Senthil Kumar',
         location: data.location || 'Bangalore Office',
+
         joining_date: data.joining_date || data.hire_date || '2023-01-15',
         about: data.about || '',
         what_i_love: data.what_i_love || '',

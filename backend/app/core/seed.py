@@ -53,7 +53,7 @@ def seed_default_data(force: bool = False):
                 "company_name": "Odoo India",
                 "department": "Engineering",
                 "designation": "Senior Full-Stack Engineer",
-                "manager_name": "Senthil Kumar",
+                "manager_name": "Executive Board",
                 "location": "Bangalore Office",
                 "phone": "+91 98765 43210",
                 "basic_salary": 50000.0,
@@ -114,7 +114,7 @@ def seed_default_data(force: bool = False):
                 "company_name": "Odoo India",
                 "department": "Engineering",
                 "designation": "Product UI/UX Designer",
-                "manager_name": "Vishaal A K",
+                "manager_name": "Senthil Kumar",
                 "location": "Chennai Hub",
                 "phone": "+91 98765 43212",
                 "basic_salary": 48000.0,
@@ -144,7 +144,7 @@ def seed_default_data(force: bool = False):
                 "company_name": "Odoo India",
                 "department": "Finance & Operations",
                 "designation": "Lead Financial Analyst",
-                "manager_name": "Vishaal A K",
+                "manager_name": "Senthil Kumar",
                 "location": "Bangalore Office",
                 "phone": "+91 98765 43213",
                 "basic_salary": 52000.0,
@@ -164,6 +164,7 @@ def seed_default_data(force: bool = False):
                 "pan_no": "RSTUV3456W",
                 "uan_no": "100987654324",
             },
+
         ]
 
         created_users = []
