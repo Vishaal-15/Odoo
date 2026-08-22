@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, Numeric, Text, Boolean, ForeignKey, Enum as SQLEnum, Index
+from sqlalchemy import Column, Integer, String, Date, DateTime, Numeric, Text, Boolean, ForeignKey, Enum as SQLEnum, Index, CheckConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database.connection import Base
@@ -25,6 +25,10 @@ class LeaveType(Base):
         "LeaveRequest",
         back_populates="leave_type",
         cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (
+        CheckConstraint("days_allowed_per_year >= 0", name="check_leave_type_days_allowed"),
     )
 
     def __repr__(self) -> str:
@@ -79,6 +83,8 @@ class LeaveRequest(Base):
     __table_args__ = (
         Index("ix_leave_requests_employee_status", "employee_id", "status"),
         Index("ix_leave_requests_dates", "start_date", "end_date"),
+        CheckConstraint("days_count > 0 AND days_count <= 365", name="check_leave_days_count"),
+        CheckConstraint("start_date <= end_date", name="check_leave_date_order"),
     )
 
     def __repr__(self) -> str:

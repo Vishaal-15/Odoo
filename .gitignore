@@ -44,6 +44,8 @@ postgres_data/
 *.sqlite
 *.sqlite3
 *.db
+database/backups/
+*.sql.gz
 
 # Node / Frontend
 node_modules/

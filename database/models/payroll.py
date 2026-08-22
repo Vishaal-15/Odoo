@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, Numeric, Text, ForeignKey, Enum as SQLEnum, UniqueConstraint, Index, JSON
+from sqlalchemy import Column, Integer, String, Date, DateTime, Numeric, Text, ForeignKey, Enum as SQLEnum, UniqueConstraint, Index, JSON, CheckConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database.connection import Base
@@ -17,10 +17,10 @@ class SalaryStructure(Base):
     
     base_salary = Column(Numeric(12, 2), nullable=False)
     allowances = Column(Numeric(12, 2), default=0.00, nullable=False)
-    allowances_breakdown = Column(JSON, nullable=True, default=dict)  # e.g. {"hra": 15000, "transport": 5000, "medical": 3000}
+    allowances_breakdown = Column(JSON, nullable=True, default=dict)
     
     deductions = Column(Numeric(12, 2), default=0.00, nullable=False)
-    deductions_breakdown = Column(JSON, nullable=True, default=dict)  # e.g. {"tax": 8000, "pf": 4000, "insurance": 1500}
+    deductions_breakdown = Column(JSON, nullable=True, default=dict)
     
     net_salary = Column(Numeric(12, 2), nullable=False)
     effective_from = Column(Date, nullable=False)
@@ -32,6 +32,13 @@ class SalaryStructure(Base):
     employee = relationship(
         "Employee",
         back_populates="salary_structure"
+    )
+
+    __table_args__ = (
+        CheckConstraint("base_salary >= 0", name="check_salary_struct_base_positive"),
+        CheckConstraint("allowances >= 0", name="check_salary_struct_allowances_positive"),
+        CheckConstraint("deductions >= 0", name="check_salary_struct_deductions_positive"),
+        CheckConstraint("net_salary >= 0", name="check_salary_struct_net_positive"),
     )
 
     def __repr__(self) -> str:
@@ -79,6 +86,12 @@ class Payroll(Base):
         UniqueConstraint("employee_id", "month", "year", name="uq_payroll_employee_month_year"),
         Index("ix_payroll_period", "year", "month"),
         Index("ix_payroll_employee_status", "employee_id", "payment_status"),
+        CheckConstraint("month >= 1 AND month <= 12", name="check_payroll_month_range"),
+        CheckConstraint("year >= 2000", name="check_payroll_year_valid"),
+        CheckConstraint("base_salary >= 0", name="check_payroll_base_positive"),
+        CheckConstraint("allowances >= 0", name="check_payroll_allowances_positive"),
+        CheckConstraint("deductions >= 0", name="check_payroll_deductions_positive"),
+        CheckConstraint("net_salary >= 0", name="check_payroll_net_positive"),
     )
 
     def __repr__(self) -> str:

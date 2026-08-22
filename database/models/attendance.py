@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Date, DateTime, Numeric, Text, ForeignKey, Enum as SQLEnum, UniqueConstraint, Index
+from sqlalchemy import Column, Integer, Date, DateTime, Numeric, Text, ForeignKey, Enum as SQLEnum, UniqueConstraint, Index, CheckConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database.connection import Base
@@ -37,6 +37,7 @@ class Attendance(Base):
     __table_args__ = (
         UniqueConstraint("employee_id", "date", name="uq_attendance_employee_date"),
         Index("ix_attendance_employee_date", "employee_id", "date"),
+        CheckConstraint("work_hours >= 0 AND work_hours <= 24", name="check_attendance_work_hours"),
     )
 
     def __repr__(self) -> str:

@@ -12,7 +12,7 @@ Dayflow HRMS is an enterprise-grade Human Resource Management System designed to
 | :--- | :--- | :--- |
 | **Developer 1** | **Backend** | FastAPI, SQLAlchemy 2.0, JWT Authentication, RBAC, Core APIs, Testing |
 | **Developer 2** | **Frontend** | React, Vite, Modern Dashboard UI, Routing, Responsive Design, API Integration |
-| **Developer 3** | **Database & Infra** | PostgreSQL 16 (Docker), Alembic Migrations, Docker Compose, DB Optimization |
+| **Developer 3 (Your Stack)** | **Database & Infra** | PostgreSQL 16 (Docker), Alembic Migrations, Docker Compose, DB Optimization, Production Tooling |
 | **Developer 4** | **AI & Analytics** | Historical Analytics, Predictive Insights, Notifications, Background Processing |
 
 ---
@@ -38,25 +38,14 @@ python -m alembic upgrade head
 python -m database.seed
 ```
 
-### 2. Run the FastAPI Backend
+### 2. Verify Production Health & Diagnostics
 ```bash
-cd backend
-python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On Linux/macOS:
-# source venv/bin/activate
-
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+python database/scripts/healthcheck.py
 ```
 
-- **Interactive API Docs (Swagger UI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Alternative Docs (ReDoc)**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-
-### 3. Run Backend Test Suite
+### 3. Run the End-to-End Production Test Suite
 ```bash
-pytest backend/tests -v
+python database/scripts/test_e2e_production.py
 ```
 
 ---
@@ -85,64 +74,84 @@ The system enforces strict role-based access control (RBAC) across three distinc
 
 ---
 
-## 📁 Repository Structure
+## 🏗 Repository Structure (Database + Infrastructure)
 
-```text
+```
 odoo/
-├── .env.example                  # Environment variable template
-├── .gitignore                    # Git ignore configuration
-├── docker-compose.yml            # PostgreSQL & container services
-├── alembic.ini                   # Alembic migration configuration
-├── README.md                     # Main project guide
+├── .env.example                  # Environment variable configuration template
+├── .gitignore
+├── alembic.ini                   # Alembic database migration config
+├── docker-compose.yml            # Local development Docker compose
+├── docker-compose.prod.yml       # Production-hardened Docker compose
 ├── docs/
-│   ├── database-schema.md        # Complete DB schema, constraints & indexes
-│   ├── architecture.md           # System topology & container network
+│   ├── database-schema.md        # Database schema specifications & ER diagrams
+│   ├── architecture.md           # System architecture & container network
 │   └── api-contract.md           # REST API endpoint reference
-├── database/                     # Database & Infrastructure (Dev 3)
-│   ├── config.py                 # Environment & DB connection configuration
-│   ├── connection.py             # Engine, SessionLocal, get_db dependency
-│   ├── init.sql                  # PostgreSQL container initial extensions
-│   ├── seed.py                   # Idempotent Python development seed script
-│   ├── seed_data.sql             # Pure SQL development seed script
-│   ├── models/                   # SQLAlchemy 2.0 ORM Models
-│   ├── migrations/               # Alembic version control
-│   └── scripts/                  # DB management & test scripts
-├── backend/                      # FastAPI Backend (Dev 1)
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── core/
-│   │   ├── models/
-│   │   ├── schemas/
-│   │   ├── repositories/
-│   │   ├── services/
-│   │   └── api/
-│   └── tests/
-└── frontend/                     # React Frontend (Dev 2)
+└── database/                     # Database & Infrastructure (Developer 3)
+    ├── config.py                 # Environment & DB connection configuration
+    ├── connection.py             # Engine, QueuePool, get_db dependency, diagnostics
+    ├── init.sql                  # PostgreSQL container initial extensions
+    ├── seed.py                   # Idempotent Python development seed script
+    ├── seed_data.sql             # Pure SQL development seed script
+    ├── models/                   # SQLAlchemy 2.0 ORM Models & Check Constraints
+    │   ├── enums.py              # Role, status, and notification enums
+    │   ├── user.py               # User authentication model
+    │   ├── department.py         # Department organizational model
+    │   ├── employee.py           # Employee profile and document model
+    │   ├── attendance.py         # Daily attendance with work-hour constraints
+    │   ├── leave.py              # LeaveType and LeaveRequest models
+    │   ├── payroll.py            # SalaryStructure and Payroll slip models
+    │   ├── notification.py       # Notification dispatch model
+    │   └── audit_log.py          # Security audit trail log model
+    ├── migrations/               # Alembic version control
+    ├── backups/                  # Automated gzip database backups
+    └── scripts/                  # DB management, verification & backup scripts
+        ├── healthcheck.py        # Production health & readiness probe
+        ├── test_e2e_production.py# 10-scenario end-to-end production test suite
+        ├── test_connection.py    # Baseline connectivity test
+        ├── reset_db.py           # Database rollback, migration, and re-seed
+        ├── backup_db.py          # Automated compressed database backup
+        └── restore_db.py         # Safe database restore tool
 ```
 
 ---
 
-## 🛠 Useful Infrastructure Commands
+## 🛠 Useful Infrastructure & Production Commands
 
-### Reset & Reseed Database
+### 1. Run Health Diagnostics
+```bash
+python database/scripts/healthcheck.py
+```
+
+### 2. Run Comprehensive End-to-End Test Suite
+```bash
+python database/scripts/test_e2e_production.py
+```
+
+### 3. Create Automated Database Backup
+```bash
+python database/scripts/backup_db.py
+```
+
+### 4. Restore Database from Backup
+```bash
+python database/scripts/restore_db.py database/backups/dayflow_db_backup_<timestamp>.sql.gz
+```
+
+### 5. Reset & Reseed Database
 ```bash
 python database/scripts/reset_db.py
 ```
 
-### Generate a New Alembic Migration
+### 6. Start Production Docker Stack
 ```bash
-python -m alembic revision --autogenerate -m "describe_changes"
+docker compose -f docker-compose.prod.yml up -d
 ```
 
-### Optional: Launch Adminer (Web-based Database UI)
+### 7. Optional: Launch Adminer (Web Database UI)
 ```bash
 docker compose --profile tools up -d adminer
-# Access Adminer at http://localhost:8080 (System: PostgreSQL, Server: postgres, DB: dayflow_db)
-```
-
-### Stop Database Container
-```bash
-docker compose down
+# Access at http://localhost:8080 (System: PostgreSQL, Server: postgres, DB: dayflow_db)
 ```
 
 ---
