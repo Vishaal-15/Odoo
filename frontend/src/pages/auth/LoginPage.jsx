@@ -226,7 +226,7 @@ export const LoginPage = () => {
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
-                  onClick={() => selectQuickAccount('admin@dayflow.com', 'Admin@123')}
+                  onClick={() => selectQuickAccount('vishaal@dayflow.com', 'Admin@123')}
                   className="px-2.5 py-2 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/25 hover:bg-amber-500/20 hover:border-amber-500/40 transition-all text-center flex flex-col items-center gap-0.5"
                 >
                   <span>Admin</span>
@@ -234,7 +234,7 @@ export const LoginPage = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => selectQuickAccount('hr@dayflow.com', 'Hr@123')}
+                  onClick={() => selectQuickAccount('sharan@dayflow.com', 'Hr@123')}
                   className="px-2.5 py-2 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all text-center flex flex-col items-center gap-0.5"
                 >
                   <span>HR Officer</span>
@@ -242,7 +242,7 @@ export const LoginPage = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => selectQuickAccount('employee@dayflow.com', 'Employee@123')}
+                  onClick={() => selectQuickAccount('saaral@dayflow.com', 'Employee@123')}
                   className="px-2.5 py-2 rounded-lg text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/25 hover:bg-sky-500/20 hover:border-sky-500/40 transition-all text-center flex flex-col items-center gap-0.5"
                 >
                   <span>Employee</span>

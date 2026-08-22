@@ -26,10 +26,11 @@ export const EmployeeAttendance = () => {
   const loadAttendance = async () => {
     setLoading(true);
     try {
-      const records = await attendanceService.getAttendance();
+      const [records, today] = await Promise.all([
+        attendanceService.getMyAttendance(),
+        attendanceService.getTodayStatus(),
+      ]);
       setAttendanceList(records);
-      const todayStr = new Date().toISOString().split('T')[0];
-      const today = records.find((r) => r.date === todayStr);
       setTodayRecord(today || null);
     } catch (err) {
       console.error('Failed to load attendance:', err);

@@ -2,7 +2,7 @@ import time
 import uuid
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
@@ -10,7 +10,7 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 
 from app.core.config import settings
-from app.core.database import Base, engine, SessionLocal
+from app.core.database import Base, engine, SessionLocal, get_db
 from app.core.limiter import limiter
 from app.api.v1.router import api_router
 
@@ -24,8 +24,12 @@ logger = logging.getLogger("dayflow-hrms")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Auto-create tables on startup
-    Base.metadata.create_all(bind=engine)
+    # Auto-create tables and seed default data on startup
+    try:
+        from app.core.seed import seed_default_data
+        seed_default_data()
+    except Exception as e:
+        logger.warning(f"Database table creation / auto-seed skipped on startup: {e}")
     yield
 
 
@@ -112,9 +116,8 @@ def liveness_probe():
 
 
 @app.get("/health/ready", tags=["Health & Diagnostics"])
-def readiness_probe():
+def readiness_probe(db=Depends(get_db)):
     """Kubernetes / Cloud container readiness probe verifying database connectivity."""
-    db = SessionLocal()
     try:
         db.execute(text("SELECT 1"))
         return {"status": "ready", "database": "connected"}

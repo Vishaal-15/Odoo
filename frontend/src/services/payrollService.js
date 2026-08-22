@@ -1,32 +1,43 @@
 import api from './api';
 import { mockPayrollRecords } from '../utils/mockData';
+import { extractItems, mapPayrollRecord, shouldUseMockFallback } from '../utils/apiMappers';
 
 export const payrollService = {
-  async getPayrollOverview() {
+  async getPayrollOverview(params = {}) {
     try {
-      const data = await api.get('/payroll');
-      return Array.isArray(data) ? data : mockPayrollRecords;
+      const query = new URLSearchParams(params).toString();
+      const endpoint = query ? `/payroll?${query}` : '/payroll';
+      const data = await api.get(endpoint);
+      return extractItems(data).map(mapPayrollRecord);
     } catch (err) {
-      return mockPayrollRecords;
+      if (shouldUseMockFallback(err)) return mockPayrollRecords;
+      throw err;
     }
   },
 
-  async getMyPayslips() {
+  async getMyPayslips(params = {}) {
     try {
-      const data = await api.get('/payroll/my-payslips');
-      return Array.isArray(data) ? data : mockPayrollRecords;
+      const query = new URLSearchParams(params).toString();
+      const endpoint = query ? `/payroll/me?${query}` : '/payroll/me';
+      const data = await api.get(endpoint);
+      const items = Array.isArray(data) ? data : extractItems(data);
+      return items.map(mapPayrollRecord);
     } catch (err) {
-      return mockPayrollRecords;
+      if (shouldUseMockFallback(err)) return mockPayrollRecords;
+      throw err;
     }
   },
 
   async getPayslipDetails(id) {
     try {
       const data = await api.get(`/payroll/${id}`);
-      return data;
+      return mapPayrollRecord(data);
     } catch (err) {
-      const found = mockPayrollRecords.find((p) => p.id === Number(id));
-      return found || mockPayrollRecords[0];
+      if (shouldUseMockFallback(err)) {
+        const found = mockPayrollRecords.find((p) => p.id === Number(id));
+        return found || mockPayrollRecords[0];
+      }
+      throw err;
     }
   },
 
@@ -35,6 +46,7 @@ export const payrollService = {
       const data = await api.post('/payroll/generate', { pay_period: payPeriod });
       return data;
     } catch (err) {
+      if (!shouldUseMockFallback(err)) throw err;
       return {
         message: `Payroll for ${payPeriod} generated successfully for all active employees.`,
         generated_count: 48,

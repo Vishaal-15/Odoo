@@ -5,7 +5,8 @@ export const notificationService = {
   async getNotifications() {
     try {
       const data = await api.get('/notifications');
-      return Array.isArray(data?.notifications) ? data.notifications : mockNotifications;
+      // Backend returns { unread_count, items } (not { notifications })
+      return Array.isArray(data?.items) ? data.items : mockNotifications;
     } catch (err) {
       return mockNotifications;
     }
@@ -13,7 +14,8 @@ export const notificationService = {
 
   async markAsRead(id) {
     try {
-      await api.put(`/notifications/${id}/read`, {});
+      // Backend: PATCH /notifications/{id}/read (not PUT)
+      await api.patch(`/notifications/${id}/read`, {});
     } catch (err) {
       const target = mockNotifications.find((n) => n.id === Number(id));
       if (target) target.is_read = true;
@@ -22,7 +24,8 @@ export const notificationService = {
 
   async markAllAsRead() {
     try {
-      await api.put('/notifications/read-all', {});
+      // Backend: PATCH /notifications/read-all (not PUT)
+      await api.patch('/notifications/read-all', {});
     } catch (err) {
       mockNotifications.forEach((n) => (n.is_read = true));
     }

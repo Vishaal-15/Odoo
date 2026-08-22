@@ -49,7 +49,14 @@ class ApiService {
       }
 
       if (!response.ok) {
-        const errorMsg = data?.detail || `HTTP error! status: ${response.status}`;
+        let errorMsg = `HTTP error! status: ${response.status}`;
+        if (Array.isArray(data?.detail)) {
+          errorMsg = data.detail.map((item) => item.msg || item.message || JSON.stringify(item)).join(', ');
+        } else if (typeof data?.detail === 'string') {
+          errorMsg = data.detail;
+        } else if (data?.detail) {
+          errorMsg = String(data.detail);
+        }
         const error = new Error(errorMsg);
         error.status = response.status;
         error.data = data;
@@ -73,6 +80,10 @@ class ApiService {
 
   put(endpoint, body, options = {}) {
     return this.request(endpoint, { ...options, method: 'PUT', body });
+  }
+
+  patch(endpoint, body, options = {}) {
+    return this.request(endpoint, { ...options, method: 'PATCH', body });
   }
 
   delete(endpoint, options = {}) {

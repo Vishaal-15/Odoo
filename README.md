@@ -12,8 +12,8 @@ Dayflow HRMS is an enterprise-grade Human Resource Management System designed to
 | :--- | :--- | :--- |
 | **Developer 1** | **Backend** | FastAPI, SQLAlchemy 2.0, JWT Authentication, RBAC, Core APIs, Testing |
 | **Developer 2** | **Frontend** | React, Vite, Modern Dashboard UI, Routing, Responsive Design, API Integration |
-| **Developer 3 (Your Stack)** | **Database & Infra** | PostgreSQL 16 (Docker), Alembic Migrations, Docker Compose, DB Optimization, Production Tooling |
-| **Developer 4** | **AI & Analytics** | Historical Analytics, Predictive Insights, Notifications, Background Processing |
+| **Developer 3** | **Database & Infra** | PostgreSQL 16 (Docker), Alembic Migrations, Docker Compose, DB Optimization, Production Tooling |
+| **Developer 4 (Your Stack)** | **Analytics & Reports** | Real-Time Analytics, Corporate Reports, Notification Integration, Cross-Module E2E Testing |
 
 ---
 
@@ -38,15 +38,39 @@ python -m alembic upgrade head
 python -m database.seed
 ```
 
-### 2. Verify Production Health & Diagnostics
+### 2. Run the Full Backend Integration Test Suite (65/65 Tests)
 ```bash
-python database/scripts/healthcheck.py
+pytest backend/tests -v
 ```
 
-### 3. Run the End-to-End Production Test Suite
+### 3. Run the Frontend Test Suite (9/9 Tests)
 ```bash
-python database/scripts/test_e2e_production.py
+cd frontend
+npm test
 ```
+
+### 4. Run the FastAPI Backend
+```bash
+cd backend
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Linux/macOS:
+# source venv/bin/activate
+
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+- **Interactive Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc UI**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+### 5. Run the React + Vite Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+- **Web App**: [http://localhost:5173](http://localhost:5173)
 
 ---
 

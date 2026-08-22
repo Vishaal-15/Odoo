@@ -39,8 +39,8 @@ export const RegisterPage = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters in length.');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters in length.');
       return;
     }
 

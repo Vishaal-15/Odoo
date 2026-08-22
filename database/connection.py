@@ -11,20 +11,27 @@ logger = logging.getLogger("database")
 Base = declarative_base()
 
 # Hardened Synchronous Engine
-engine = create_engine(
-    settings.sync_database_url,
-    poolclass=QueuePool,
-    pool_pre_ping=settings.DB_POOL_PRE_PING,
-    pool_size=settings.DB_POOL_SIZE,
-    max_overflow=settings.DB_MAX_OVERFLOW,
-    pool_timeout=settings.DB_POOL_TIMEOUT,
-    pool_recycle=settings.DB_POOL_RECYCLE,
-    connect_args={
-        "connect_timeout": 10,
-        "application_name": "dayflow_hrms_db",
-    },
-    future=True,
-)
+if settings.sync_database_url.startswith("sqlite"):
+    engine = create_engine(
+        settings.sync_database_url,
+        connect_args={"check_same_thread": False},
+        future=True,
+    )
+else:
+    engine = create_engine(
+        settings.sync_database_url,
+        poolclass=QueuePool,
+        pool_pre_ping=settings.DB_POOL_PRE_PING,
+        pool_size=settings.DB_POOL_SIZE,
+        max_overflow=settings.DB_MAX_OVERFLOW,
+        pool_timeout=settings.DB_POOL_TIMEOUT,
+        pool_recycle=settings.DB_POOL_RECYCLE,
+        connect_args={
+            "connect_timeout": 10,
+            "application_name": "dayflow_hrms_db",
+        },
+        future=True,
+    )
 
 # Session factory for synchronous operations
 SessionLocal = sessionmaker(

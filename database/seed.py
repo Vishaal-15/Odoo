@@ -113,101 +113,38 @@ def seed_database():
 
         employees_spec = [
             {
-                "user": {"email": "admin@dayflow.com", "password_hash": admin_pwd, "role": UserRole.ADMIN, "is_verified": True, "is_active": True},
+                "user": {"email": "vishaal@dayflow.com", "password_hash": admin_pwd, "role": UserRole.ADMIN, "is_verified": True, "is_active": True},
                 "employee": {
                     "employee_code": "EMP001",
-                    "first_name": "Aarav",
-                    "last_name": "Sharma",
-                    "email": "admin@dayflow.com",
+                    "first_name": "Vishaal",
+                    "last_name": "A K",
+                    "email": "vishaal@dayflow.com",
                     "phone": "+91-98765-43210",
-                    "date_of_birth": date(1988, 5, 12),
-                    "gender": "Male",
-                    "address": "B-402, Prestige Tech Park, Marathahalli, Bengaluru, Karnataka 560103",
-                    "profile_picture_url": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
-                    "dept_code": "ENG",
-                    "designation": "Chief Technology Officer / Administrator",
-                    "employment_type": EmploymentType.FULL_TIME,
-                    "joining_date": date(2022, 1, 15),
-                    "status": EmployeeStatus.ACTIVE,
-                    "documents": {"resume": "docs/aarav_sharma_resume.pdf", "id_proof": "docs/aarav_aadhaar.pdf"},
-                },
-                "salary": {"base": Decimal("150000.00"), "hra": Decimal("40000.00"), "transport": Decimal("8000.00"), "medical": Decimal("5000.00"), "tax": Decimal("28000.00"), "pf": Decimal("9000.00"), "insurance": Decimal("2500.00")}
-            },
-            {
-                "user": {"email": "hr@dayflow.com", "password_hash": hr_pwd, "role": UserRole.HR, "is_verified": True, "is_active": True},
-                "employee": {
-                    "employee_code": "EMP002",
-                    "first_name": "Ananya",
-                    "last_name": "Iyer",
-                    "email": "hr@dayflow.com",
-                    "phone": "+91-98765-43211",
-                    "date_of_birth": date(1991, 8, 24),
-                    "gender": "Female",
-                    "address": "Flat 1204, Hiranandani Gardens, Powai, Mumbai, Maharashtra 400076",
-                    "profile_picture_url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400",
-                    "dept_code": "HR",
-                    "designation": "Lead HR Officer",
-                    "employment_type": EmploymentType.FULL_TIME,
-                    "joining_date": date(2022, 3, 1),
-                    "status": EmployeeStatus.ACTIVE,
-                    "documents": {"resume": "docs/ananya_iyer_resume.pdf", "id_proof": "docs/ananya_pan.pdf"},
-                },
-                "salary": {"base": Decimal("95000.00"), "hra": Decimal("25000.00"), "transport": Decimal("5000.00"), "medical": Decimal("3000.00"), "tax": Decimal("16000.00"), "pf": Decimal("5700.00"), "insurance": Decimal("1800.00")}
-            },
-            {
-                "user": {"email": "rohan.verma@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
-                "employee": {
-                    "employee_code": "EMP003",
-                    "first_name": "Rohan",
-                    "last_name": "Verma",
-                    "email": "rohan.verma@dayflow.com",
-                    "phone": "+91-98765-43212",
-                    "date_of_birth": date(1994, 3, 19),
+                    "date_of_birth": date(1998, 3, 19),
                     "gender": "Male",
                     "address": "45/A, Financial District, Gachibowli, Hyderabad, Telangana 500032",
-                    "profile_picture_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+                    "profile_picture_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400",
                     "dept_code": "ENG",
                     "designation": "Senior Full-Stack Engineer",
                     "employment_type": EmploymentType.FULL_TIME,
                     "joining_date": date(2023, 2, 10),
                     "status": EmployeeStatus.ACTIVE,
-                    "documents": {"resume": "docs/rohan_verma_resume.pdf"},
+                    "documents": {},
                 },
                 "salary": {"base": Decimal("110000.00"), "hra": Decimal("28000.00"), "transport": Decimal("6000.00"), "medical": Decimal("3500.00"), "tax": Decimal("19000.00"), "pf": Decimal("6600.00"), "insurance": Decimal("2000.00")}
             },
             {
-                "user": {"email": "pooja.patel@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
+                "user": {"email": "sharan@dayflow.com", "password_hash": hr_pwd, "role": UserRole.HR, "is_verified": True, "is_active": True},
                 "employee": {
-                    "employee_code": "EMP004",
-                    "first_name": "Pooja",
-                    "last_name": "Patel",
-                    "email": "pooja.patel@dayflow.com",
-                    "phone": "+91-98765-43213",
-                    "date_of_birth": date(1996, 11, 5),
-                    "gender": "Female",
-                    "address": "88, North Main Road, Koregaon Park, Pune, Maharashtra 411001",
-                    "profile_picture_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400",
-                    "dept_code": "ENG",
-                    "designation": "Product UI/UX Designer",
-                    "employment_type": EmploymentType.FULL_TIME,
-                    "joining_date": date(2023, 6, 15),
-                    "status": EmployeeStatus.ACTIVE,
-                    "documents": {"portfolio": "https://poojapatel.design"},
-                },
-                "salary": {"base": Decimal("85000.00"), "hra": Decimal("22000.00"), "transport": Decimal("4500.00"), "medical": Decimal("2500.00"), "tax": Decimal("13500.00"), "pf": Decimal("5100.00"), "insurance": Decimal("1500.00")}
-            },
-            {
-                "user": {"email": "kavita.sundaram@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
-                "employee": {
-                    "employee_code": "EMP005",
-                    "first_name": "Kavita",
-                    "last_name": "Sundaram",
-                    "email": "kavita.sundaram@dayflow.com",
-                    "phone": "+91-98765-43214",
-                    "date_of_birth": date(1992, 7, 30),
-                    "gender": "Female",
+                    "employee_code": "EMP002",
+                    "first_name": "Sharan",
+                    "last_name": "B",
+                    "email": "sharan@dayflow.com",
+                    "phone": "+91-98765-43211",
+                    "date_of_birth": date(1997, 7, 30),
+                    "gender": "Male",
                     "address": "23, 2nd Avenue, Anna Nagar West, Chennai, Tamil Nadu 600040",
-                    "profile_picture_url": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
+                    "profile_picture_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
                     "dept_code": "MKT",
                     "designation": "Senior Marketing Strategist",
                     "employment_type": EmploymentType.FULL_TIME,
@@ -218,14 +155,35 @@ def seed_database():
                 "salary": {"base": Decimal("80000.00"), "hra": Decimal("20000.00"), "transport": Decimal("4000.00"), "medical": Decimal("2500.00"), "tax": Decimal("12500.00"), "pf": Decimal("4800.00"), "insurance": Decimal("1400.00")}
             },
             {
-                "user": {"email": "vikram.malhotra@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
+                "user": {"email": "saaral@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
                 "employee": {
-                    "employee_code": "EMP006",
-                    "first_name": "Vikram",
-                    "last_name": "Malhotra",
-                    "email": "vikram.malhotra@dayflow.com",
-                    "phone": "+91-98765-43215",
-                    "date_of_birth": date(1989, 12, 14),
+                    "employee_code": "EMP003",
+                    "first_name": "Saaral",
+                    "last_name": "S",
+                    "email": "saaral@dayflow.com",
+                    "phone": "+91-98765-43212",
+                    "date_of_birth": date(1999, 11, 5),
+                    "gender": "Female",
+                    "address": "88, Koregaon Park, Pune, Maharashtra 411001",
+                    "profile_picture_url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400",
+                    "dept_code": "ENG",
+                    "designation": "Product UI/UX Designer",
+                    "employment_type": EmploymentType.FULL_TIME,
+                    "joining_date": date(2023, 6, 15),
+                    "status": EmployeeStatus.ACTIVE,
+                    "documents": {},
+                },
+                "salary": {"base": Decimal("85000.00"), "hra": Decimal("22000.00"), "transport": Decimal("4500.00"), "medical": Decimal("2500.00"), "tax": Decimal("13500.00"), "pf": Decimal("5100.00"), "insurance": Decimal("1500.00")}
+            },
+            {
+                "user": {"email": "sreevanth@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
+                "employee": {
+                    "employee_code": "EMP004",
+                    "first_name": "Sreevanth",
+                    "last_name": "K",
+                    "email": "sreevanth@dayflow.com",
+                    "phone": "+91-98765-43213",
+                    "date_of_birth": date(1996, 12, 14),
                     "gender": "Male",
                     "address": "704, DLF Horizon, Sector 54, Golf Course Road, Gurugram, Haryana 122002",
                     "profile_picture_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
@@ -337,10 +295,10 @@ def seed_database():
         # ----------------------------------------------------------------------
         # 4. Update Department Managers
         # ----------------------------------------------------------------------
-        dept_map["ENG"].manager_id = employee_objects[0].id  # Aarav Sharma (CTO)
-        dept_map["HR"].manager_id = employee_objects[1].id   # Ananya Iyer (HR Lead)
-        dept_map["MKT"].manager_id = employee_objects[4].id  # Kavita Sundaram (Marketing)
-        dept_map["FIN"].manager_id = employee_objects[5].id  # Vikram Malhotra (Finance)
+        dept_map["ENG"].manager_id = employee_objects[0].id  # Vishaal A K
+        dept_map["HR"].manager_id = employee_objects[1].id   # Sharan B
+        dept_map["MKT"].manager_id = employee_objects[1].id  # Sharan B
+        dept_map["FIN"].manager_id = employee_objects[3].id  # Sreevanth
         db.flush()
         print("  [+] Assigned Department Managers")
 
@@ -408,51 +366,51 @@ def seed_database():
 
         leave_requests_spec = [
             {
-                "employee_id": employee_objects[2].id,  # Rohan Verma
+                "employee_id": employee_objects[2].id,  # Saaral
                 "leave_type_code": "PAID",
                 "start_date": today + timedelta(days=10),
-                "end_date": today + timedelta(days=14),
-                "days_count": Decimal("5.0"),
-                "reason": "Family vacation to Manali and annual travel.",
+                "end_date": today + timedelta(days=12),
+                "days_count": Decimal("3.0"),
+                "reason": "Personal time off for family event.",
                 "status": LeaveStatus.PENDING,
                 "reviewed_by": None,
                 "review_comments": None,
                 "reviewed_at": None,
             },
             {
-                "employee_id": employee_objects[3].id,  # Pooja Patel
+                "employee_id": employee_objects[3].id,  # Sreevanth
                 "leave_type_code": "SICK",
                 "start_date": today - timedelta(days=3),
                 "end_date": today - timedelta(days=3),
                 "days_count": Decimal("1.0"),
-                "reason": "Viral fever and doctor consultation.",
+                "reason": "Medical appointment and recovery.",
                 "status": LeaveStatus.APPROVED,
                 "reviewed_by": hr_user.id,
                 "review_comments": "Approved. Please take rest and get well soon.",
                 "reviewed_at": datetime.now() - timedelta(days=3),
             },
             {
-                "employee_id": employee_objects[4].id,  # Kavita Sundaram
+                "employee_id": employee_objects[2].id,  # Saaral
                 "leave_type_code": "CASUAL",
                 "start_date": today - timedelta(days=15),
                 "end_date": today - timedelta(days=14),
                 "days_count": Decimal("2.0"),
-                "reason": "Personal family wedding ceremony.",
+                "reason": "Family commitment.",
                 "status": LeaveStatus.APPROVED,
                 "reviewed_by": hr_user.id,
                 "review_comments": "Approved by HR.",
                 "reviewed_at": datetime.now() - timedelta(days=16),
             },
             {
-                "employee_id": employee_objects[5].id,  # Vikram Malhotra
+                "employee_id": employee_objects[3].id,  # Sreevanth
                 "leave_type_code": "UNPAID",
                 "start_date": today + timedelta(days=25),
-                "end_date": today + timedelta(days=35),
-                "days_count": Decimal("10.0"),
-                "reason": "Financial leadership executive program.",
+                "end_date": today + timedelta(days=30),
+                "days_count": Decimal("6.0"),
+                "reason": "Extended professional development program.",
                 "status": LeaveStatus.REJECTED,
                 "reviewed_by": admin_user.id,
-                "review_comments": "Cannot approve 10-day leave during Q4 statutory financial audit.",
+                "review_comments": "Cannot approve during quarterly finance closing period.",
                 "reviewed_at": datetime.now() - timedelta(days=1),
             },
         ]
@@ -534,23 +492,23 @@ def seed_database():
         # ----------------------------------------------------------------------
         notifications_data = [
             {
-                "user_id": user_objects[0].id,  # Admin
-                "title": "Quarterly Security Audit Completed",
-                "message": "Security compliance and audit logs for the current quarter have been synchronized.",
+                "user_id": user_objects[0].id,  # Vishaal
+                "title": "System Initialized",
+                "message": "Dayflow HRMS has been configured for the hackathon team.",
                 "type": NotificationType.ANNOUNCEMENT,
                 "is_read": True,
                 "link": "/admin/audit",
             },
             {
-                "user_id": user_objects[1].id,  # HR
+                "user_id": user_objects[1].id,  # Sharan
                 "title": "New Leave Request Awaiting Review",
-                "message": "Rohan Verma submitted a Paid Leave application for 5 days.",
+                "message": "Saaral submitted a Paid Leave application for 3 days.",
                 "type": NotificationType.LEAVE_STATUS,
                 "is_read": False,
                 "link": "/hr/leave-requests",
             },
             {
-                "user_id": user_objects[2].id,  # Rohan Verma
+                "user_id": user_objects[2].id,  # Saaral
                 "title": "Welcome to Dayflow HRMS",
                 "message": "Your profile has been fully configured. You can view attendance, salary slips, and apply for leaves.",
                 "type": NotificationType.INFO,
@@ -558,7 +516,7 @@ def seed_database():
                 "link": "/profile",
             },
             {
-                "user_id": user_objects[3].id,  # Pooja Patel
+                "user_id": user_objects[3].id,  # Sreevanth
                 "title": "Leave Request Approved",
                 "message": "Your Sick Leave request for 1 day has been approved by HR.",
                 "type": NotificationType.LEAVE_STATUS,
@@ -566,7 +524,7 @@ def seed_database():
                 "link": "/leaves",
             },
             {
-                "user_id": user_objects[2].id,  # Rohan Verma
+                "user_id": user_objects[2].id,  # Saaral
                 "title": "Monthly Payslip Released",
                 "message": "Your monthly salary payslip has been generated and is ready for download.",
                 "type": NotificationType.PAYROLL_RELEASE,
@@ -603,7 +561,7 @@ def seed_database():
                 "action": "CREATE_EMPLOYEE",
                 "entity_name": "employees",
                 "entity_id": "EMP001",
-                "details": {"first_name": "Aarav", "last_name": "Sharma", "role": "ADMIN"},
+                "details": {"first_name": "Vishaal", "last_name": "A K", "role": "ADMIN"},
                 "ip_address": "127.0.0.1",
             },
             {
@@ -619,7 +577,7 @@ def seed_database():
                 "action": "PROCESS_PAYROLL",
                 "entity_name": "payrolls",
                 "entity_id": "ALL",
-                "details": {"batch_month": current_month - 1, "records_processed": 6},
+                "details": {"batch_month": current_month - 1, "records_processed": 4},
                 "ip_address": "192.168.1.45",
             },
         ]
@@ -645,12 +603,10 @@ def seed_database():
         print("+----------------------------+----------------+--------------+")
         print("| Email                      | Password       | Role         |")
         print("+----------------------------+----------------+--------------+")
-        print("| admin@dayflow.com          | Admin@123      | ADMIN        |")
-        print("| hr@dayflow.com             | Hr@123         | HR           |")
-        print("| rohan.verma@dayflow.com    | Employee@123   | EMPLOYEE     |")
-        print("| pooja.patel@dayflow.com    | Employee@123   | EMPLOYEE     |")
-        print("| kavita.sundaram@dayflow.com| Employee@123   | EMPLOYEE     |")
-        print("| vikram.malhotra@dayflow.com| Employee@123   | EMPLOYEE     |")
+        print("| vishaal@dayflow.com        | Admin@123      | ADMIN        |")
+        print("| sharan@dayflow.com         | Hr@123         | HR           |")
+        print("| saaral@dayflow.com         | Employee@123   | EMPLOYEE     |")
+        print("| sreevanth@dayflow.com      | Employee@123   | EMPLOYEE     |")
         print("+----------------------------+----------------+--------------+\n")
 
     except Exception as e:

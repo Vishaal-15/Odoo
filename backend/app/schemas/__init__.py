@@ -41,6 +41,19 @@ from app.schemas.analytics import (
     AttendanceTrendItem,
     LeaveBreakdownItem,
     DepartmentHeadcountItem,
+    AttendanceAnalyticsResponse,
+    LeaveAnalyticsResponse,
+    EmployeeAnalyticsResponse,
+    PayrollAnalyticsResponse,
+)
+from app.schemas.reports import (
+    ReportSummaryItem,
+    AttendanceReportRow,
+    LeaveReportRow,
+    EmployeeReportRow,
+    PayrollReportRow,
+    ReportExportRequest,
+    ReportExportResponse,
 )
 from app.schemas.audit_log import AuditLogResponse, AuditLogListResponse
 
@@ -77,6 +90,17 @@ __all__ = [
     "AttendanceTrendItem",
     "LeaveBreakdownItem",
     "DepartmentHeadcountItem",
+    "AttendanceAnalyticsResponse",
+    "LeaveAnalyticsResponse",
+    "EmployeeAnalyticsResponse",
+    "PayrollAnalyticsResponse",
+    "ReportSummaryItem",
+    "AttendanceReportRow",
+    "LeaveReportRow",
+    "EmployeeReportRow",
+    "PayrollReportRow",
+    "ReportExportRequest",
+    "ReportExportResponse",
     "AuditLogResponse",
     "AuditLogListResponse",
 ]

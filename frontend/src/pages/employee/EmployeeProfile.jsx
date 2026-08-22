@@ -45,7 +45,7 @@ export const EmployeeProfile = () => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        const data = await employeeService.getEmployeeById(user?.id || 3);
+        const data = await employeeService.getMyProfile();
         setProfile(data);
         setEditFormData({
           phone: data?.phone || '',
@@ -59,14 +59,14 @@ export const EmployeeProfile = () => {
       }
     };
 
-    fetchProfile();
+    if (user) fetchProfile();
   }, [user]);
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const updated = await employeeService.updateEmployee(profile.id, editFormData);
+      const updated = await employeeService.updateMyProfile(editFormData);
       setProfile((prev) => ({ ...prev, ...updated }));
       updateProfile(updated);
       setIsEditModalOpen(false);

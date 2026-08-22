@@ -45,7 +45,7 @@ graph TD
 | **Backend** | **Developer 1** | `backend/`, FastAPI REST APIs, authentication, JWT tokens, RBAC business logic, Pydantic schemas |
 | **Frontend** | **Developer 2** | `frontend/`, React UI, dashboard layouts, employee & HR interfaces, routing, API client integration |
 | **Database & Infra** | **Developer 3** | `database/`, `docker-compose.yml`, `.env.example`, `docs/database-schema.md`, PostgreSQL, Alembic |
-| **AI & Analytics** | **Developer 4** | `analytics/`, Predictive models, historical data aggregations, notifications, background workers |
+| **Analytics & Testing** | **Developer 4** | `analytics/`, `reports/`, Analytics & Reporting engine, cross-module notifications, integration and security test suite |
 
 ---
 
@@ -106,3 +106,26 @@ graph TD
 - Credentials and sensitive configurations are stored exclusively in `.env`.
 - `.env.example` serves as the single source of truth for environment variable templates.
 - Real `.env` files and `.pem` keys are strictly ignored by `.gitignore` and never committed to Git.
+
+---
+
+## 7. Analytics, Reporting & Notification System (Developer 4)
+
+### 7.1 Analytics Engine (`backend/app/services/analytics_service.py`)
+- Real-time aggregation of attendance metrics: presence rates, daily/weekly distributions, and 14-day trends.
+- Leave utilization metrics: requests by category (Paid, Sick, Casual, Unpaid) and approval/rejection rates.
+- Workforce metrics: department headcounts, active retention rates, and role distributions.
+- Financial telemetry: monthly salary outlays, average net compensation, and department compensation budgets.
+
+### 7.2 Corporate Reporting & Data Export Engine (`backend/app/services/report_service.py`)
+- Standard compliance reports: Monthly Attendance Registers, Payroll Statements, Leave Audits, and Workforce Rosters.
+- Multi-dimensional filtering: by date range, department, employee ID, and workflow status.
+- Direct CSV / JSON export generation.
+- Strict RBAC: access limited to `HR` and `ADMIN` roles.
+
+### 7.3 Cross-Module Notifications
+- Automated event triggers:
+  - Leave submitted -> Alerts all HR officers.
+  - Leave approved/rejected -> Alerts the applicant employee.
+  - Payroll released -> Alerts the recipient employee.
+- Read tracking with single-click mark-as-read and mark-all-read.

@@ -37,7 +37,7 @@ export const EmployeeLeave = () => {
     setLoading(true);
     try {
       const [leaves, balances] = await Promise.all([
-        leaveService.getLeaves(),
+        leaveService.getMyLeaves(),
         leaveService.getLeaveBalances(),
       ]);
       setLeaveRequests(leaves);

@@ -32,8 +32,22 @@
 | **Payroll** | `POST` | `/payroll` | Create or process monthly payroll record | Admin / HR |
 | **Notifications** | `GET` | `/notifications` | Fetch user alerts & unread count | Authenticated |
 | **Notifications** | `PATCH` | `/notifications/{id}/read` | Mark notification as read | Authenticated |
-| **Analytics** | `GET` | `/analytics/overview` | Overall HR dashboard KPIs | Admin / HR |
-| **Analytics** | `GET` | `/analytics/attendance-trends` | Attendance & absenteeism trends | Admin / HR |
+| **Notifications** | `PATCH` | `/notifications/read-all` | Mark all notifications as read | Authenticated |
+| **Analytics** | `GET` | `/analytics/overview` | Overall HR dashboard telemetry & KPIs | Admin / HR |
+| **Analytics** | `GET` | `/analytics/attendance` | Comprehensive attendance statistics & rates | Admin / HR |
+| **Analytics** | `GET` | `/analytics/leave` | Leave quotas, approved/rejected breakdown | Admin / HR |
+| **Analytics** | `GET` | `/analytics/employees` | Workforce headcount & department distribution | Admin / HR |
+| **Analytics** | `GET` | `/analytics/payroll` | Outlay totals, averages, and upcoming disbursements | Admin / HR |
+| **Analytics** | `GET` | `/analytics/attendance-trends` | Attendance & absenteeism daily trends | Admin / HR |
+| **Analytics** | `GET` | `/analytics/leave-breakdown` | Leave requests breakdown by type | Admin / HR |
+| **Analytics** | `GET` | `/analytics/department-headcount` | Headcount breakdown by department | Admin / HR |
+| **Analytics** | `GET` | `/analytics/department-breakdown` | Department distribution for UI charts | Admin / HR |
+| **Reports** | `GET` | `/reports/summary` | Available corporate report templates & logs | Admin / HR |
+| **Reports** | `GET` | `/reports/attendance` | Filterable employee attendance register report | Admin / HR |
+| **Reports** | `GET` | `/reports/leave` | Filterable leave and time-off audit report | Admin / HR |
+| **Reports** | `GET` | `/reports/employees` | Filterable workforce roster report | Admin / HR |
+| **Reports** | `GET` | `/reports/payroll` | Filterable payroll & compensation statement | Admin / HR |
+| **Reports** | `POST` | `/reports/export` | Export filtered report as CSV / data file | Admin / HR |
 
 ---
 
@@ -389,29 +403,129 @@
 
 ---
 
-## 7. Analytics & Reports Support (`/analytics`)
+## 7. Workforce Analytics & Intelligence (`/analytics`)
 
 ### `GET /analytics/overview`
 - **Auth**: `HR`, `ADMIN`
 - **Response**: `200 OK`
   ```json
   {
-    "total_employees": 45,
-    "active_employees": 44,
-    "present_today": 38,
-    "absent_today": 4,
-    "on_leave_today": 2,
-    "pending_leave_requests": 6,
-    "monthly_payroll_total": 352000.00
+    "total_employees": 48,
+    "active_employees": 46,
+    "present_today": 42,
+    "absent_today": 2,
+    "on_leave_today": 4,
+    "pending_leave_requests": 5,
+    "monthly_payroll_total": 345800.00,
+    "workforce": {
+      "totalEmployees": 48,
+      "activeEmployees": 46,
+      "departmentsCount": 6,
+      "retentionRate": "95.8%",
+      "departmentBreakdown": [
+        { "department": "Engineering", "count": 22 }
+      ]
+    },
+    "attendance": {
+      "todayPresent": 42,
+      "todayAbsent": 2,
+      "todayOnLeave": 4,
+      "averageAttendanceRate": 94.8,
+      "weeklyTrend": [
+        { "day": "Mon", "present": 44, "absent": 2, "leave": 2 }
+      ]
+    },
+    "leaveStats": {
+      "pendingApprovals": 5,
+      "approvedThisMonth": 18,
+      "rejectedThisMonth": 2,
+      "byType": [
+        { "type": "Paid Leave", "count": 12, "percent": 60.0 }
+      ]
+    },
+    "payrollSummary": {
+      "totalPayrollExpense": 345800.00,
+      "averageSalary": 7517.39,
+      "pendingDisbursements": 0,
+      "nextPayDay": "2026-08-31"
+    }
   }
   ```
+
+### `GET /analytics/attendance`
+- **Auth**: `HR`, `ADMIN`
+- **Response**: `200 OK` - Detailed presence rates, 14-day trends, and shift distribution.
+
+### `GET /analytics/leave`
+- **Auth**: `HR`, `ADMIN`
+- **Response**: `200 OK` - Leave counts by status and department-level distribution.
+
+### `GET /analytics/employees`
+- **Auth**: `HR`, `ADMIN`
+- **Response**: `200 OK` - Workforce retention rate, role counts, and department headcounts.
+
+### `GET /analytics/payroll`
+- **Auth**: `HR`, `ADMIN`
+- **Response**: `200 OK` - Monthly salary outlay, average compensation, and department outlays.
 
 ### `GET /analytics/attendance-trends`
 - **Auth**: `HR`, `ADMIN`
 - **Query Params**: `days` (int, default 7)
-- **Response**: `200 OK` - Daily trend stats.
+- **Response**: `200 OK` - Daily presence, absence, and half-day counts.
 
-### `GET /analytics/leave-breakdown`
+### `GET /analytics/department-breakdown`
 - **Auth**: `HR`, `ADMIN`
-- **Response**: `200 OK` - Count of leaves by type and status.
->>>>>>> origin/main
+- **Response**: `200 OK` - Array of `{ "department": "Engineering", "count": 22 }`.
+
+---
+
+## 8. Corporate Reports & Data Exports (`/reports`)
+
+### `GET /reports/summary`
+- **Auth**: `HR`, `ADMIN`
+- **Response**: `200 OK` - Available report categories, sizes, formats, and active statuses.
+
+### `GET /reports/attendance`
+- **Auth**: `HR`, `ADMIN`
+- **Query Params**: `start_date`, `end_date`, `department`, `employee_id`, `status`
+- **Response**: `200 OK` - Array of attendance shift records with employee details and total hours.
+
+### `GET /reports/leave`
+- **Auth**: `HR`, `ADMIN`
+- **Query Params**: `start_date`, `end_date`, `department`, `leave_type`, `status`
+- **Response**: `200 OK` - Array of leave requests with dates, reason, days count, and reviewer remarks.
+
+### `GET /reports/employees`
+- **Auth**: `HR`, `ADMIN`
+- **Query Params**: `department`, `role`, `status`
+- **Response**: `200 OK` - Complete employee roster with joining dates and compensation.
+
+### `GET /reports/payroll`
+- **Auth**: `HR`, `ADMIN`
+- **Query Params**: `month`, `year`, `department`, `status`
+- **Response**: `200 OK` - Payroll statement detailing base pay, allowances, deductions, and net salary.
+
+### `POST /reports/export`
+- **Auth**: `HR`, `ADMIN`
+- **Request Body**:
+  ```json
+  {
+    "report_type": "Monthly Attendance", // "Monthly Attendance", "Payroll Statement", "Leave Audit", "Employee Roster"
+    "format": "csv",
+    "start_date": "2026-08-01",
+    "end_date": "2026-08-31"
+  }
+  ```
+- **Response**: `200 OK`
+  ```json
+  {
+    "report_type": "Monthly Attendance",
+    "format": "csv",
+    "filename": "attendance_register_20260822_120000.csv",
+    "total_records": 45,
+    "generated_at": "2026-08-22T12:00:00Z",
+    "message": "Successfully generated Monthly Attendance report with 45 records.",
+    "content": "ID,Employee ID,Employee Name,Department,Date,Check In,Check Out,Hours,Status,Remarks\n...",
+    "download_url": "/api/v1/reports/download/attendance_register_20260822_120000.csv"
+  }
+  ```
