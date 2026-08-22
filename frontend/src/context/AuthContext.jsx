@@ -5,15 +5,25 @@ import { STORAGE_KEYS } from '../utils/constants';
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem(STORAGE_KEYS.USER_DATA);
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
   const [token, setToken] = useState(() => localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN));
+  const [user, setUser] = useState(() => {
+    const savedToken = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+    const savedUser = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+    if (!savedToken) {
+      localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+      return null;
+    }
+    try {
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleUnauthorized = () => {
+      authService.logout();
       setUser(null);
       setToken(null);
     };
@@ -22,17 +32,23 @@ export const AuthProvider = ({ children }) => {
 
     const initAuth = async () => {
       const savedToken = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-      if (savedToken) {
-        try {
-          const profile = await authService.getProfile();
-          setUser(profile);
-          setToken(savedToken);
-        } catch (err) {
-          console.error('Session verification failed:', err);
-          authService.logout();
-          setUser(null);
-          setToken(null);
-        }
+      if (!savedToken) {
+        authService.logout();
+        setUser(null);
+        setToken(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const profile = await authService.getProfile();
+        setUser(profile);
+        setToken(savedToken);
+      } catch (err) {
+        console.error('Session verification failed:', err);
+        authService.logout();
+        setUser(null);
+        setToken(null);
       }
       setLoading(false);
     };
@@ -68,6 +84,7 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = (updatedFields) => {
     setUser((prev) => {
+      if (!prev) return prev;
       const next = { ...prev, ...updatedFields };
       localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(next));
       return next;
@@ -85,7 +102,7 @@ export const AuthProvider = ({ children }) => {
     token,
     role: user?.role || null,
     loading,
-    isAuthenticated: !!user,
+    isAuthenticated: Boolean(token && user && user.role),
     login,
     register,
     updateProfile,

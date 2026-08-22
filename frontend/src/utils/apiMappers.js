@@ -167,10 +167,9 @@ export function isNetworkError(err) {
   return !err?.status && (err?.message?.includes('fetch') || err?.name === 'TypeError');
 }
 
-/** Use mock data when offline or when no auth token is present (tests / standalone UI). */
+/** Use mock data ONLY on raw network disconnection failures, NEVER on 401/403 authorization errors. */
 export function shouldUseMockFallback(err) {
-  if (isNetworkError(err)) return true;
-  const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-  if (!token && (err?.status === 401 || err?.status === 403)) return true;
-  return false;
+  if (err?.status === 401 || err?.status === 403 || err?.status === 422) return false;
+  return isNetworkError(err);
 }
+
