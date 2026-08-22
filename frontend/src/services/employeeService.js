@@ -10,10 +10,19 @@ export const employeeService = {
       const data = await api.get(endpoint);
       return extractItems(data).map(flattenEmployee);
     } catch (err) {
+      if (err.response?.status === 403) {
+        try {
+          const me = await this.getMyProfile();
+          return me ? [me] : [];
+        } catch {
+          return [];
+        }
+      }
       if (shouldUseMockFallback(err)) return mockUsers;
       throw err;
     }
   },
+
 
   async getMyProfile() {
     try {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
 import { employeeService } from '../../services/employeeService';
+import { attendanceService } from '../../services/attendanceService';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
@@ -14,13 +15,10 @@ import {
   Users,
   Search,
   Plus,
-  Mail,
-  Phone,
   Plane,
   Building,
   CheckCircle2,
   Calendar,
-  Briefcase,
   ExternalLink
 } from 'lucide-react';
 
@@ -30,6 +28,7 @@ export const HrEmployees = () => {
   const navigate = useNavigate();
 
   const [employees, setEmployees] = useState([]);
+  const [todayAttendances, setTodayAttendances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('ALL');
@@ -52,20 +51,30 @@ export const HrEmployees = () => {
 
   const isHrOrAdmin = user?.role === 'ADMIN' || user?.role === 'HR';
 
-  const loadEmployees = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const data = await employeeService.getEmployees();
-      setEmployees(data);
+      const [empData, attData] = await Promise.allSettled([
+        employeeService.getEmployees(),
+        attendanceService.getAttendance(),
+      ]);
+      if (empData.status === 'fulfilled') setEmployees(empData.value || []);
+      if (attData.status === 'fulfilled') setTodayAttendances(attData.value || []);
     } catch (err) {
-      console.error('Failed to load employees:', err);
+      console.error('Failed to load data:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadEmployees();
+    loadData();
+    window.addEventListener('attendance-updated', loadData);
+    const interval = setInterval(loadData, 10000); // Poll every 10s for real-time live sync
+    return () => {
+      window.removeEventListener('attendance-updated', loadData);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleAddEmployee = async (e) => {
@@ -94,20 +103,46 @@ export const HrEmployees = () => {
     }
   };
 
-  // Status generator for wireframe alignment (Present 🟢, On Leave ✈️, Absent 🟡)
-  const getEmployeeStatusInfo = (emp, idx) => {
-    // If deactivated
+  // Real-time status dot calculation matching Wireframe 2 (Present 🟢, On Leave ✈️, Absent 🟡)
+  const getEmployeeStatusInfo = (emp) => {
     if (emp.is_active === false) {
-      return { type: 'ABSENT', color: 'bg-amber-500', label: 'Absent' };
+      return { type: 'ABSENT', color: 'bg-amber-500', label: 'Deactivated' };
     }
-    // Simulation / Mapping:
-    if (emp.role === 'ADMIN' || idx % 3 === 0) {
-      return { type: 'PRESENT', color: 'bg-emerald-500', label: 'Present in Office' };
-    } else if (idx % 3 === 1) {
-      return { type: 'LEAVE', isLeave: true, label: 'On Approved Time Off' };
-    } else {
-      return { type: 'ABSENT', color: 'bg-amber-400', label: 'Absent / Out of Office' };
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const userAtt = todayAttendances.find((a) => 
+      (a.employee_id === emp.employee_id || a.user_id === emp.id || a.employee_name?.toLowerCase() === `${emp.first_name} ${emp.last_name}`.toLowerCase()) &&
+      (!a.date || a.date === todayStr)
+    );
+
+    // If checked in today
+    if (userAtt && userAtt.check_in && !userAtt.check_out) {
+      return { 
+        type: 'PRESENT', 
+        color: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse', 
+        label: 'Present in Office (Checked In)' 
+      };
     }
+    if (userAtt && userAtt.status === 'PRESENT') {
+      return { 
+        type: 'PRESENT', 
+        color: 'bg-emerald-500', 
+        label: 'Present in Office' 
+      };
+    }
+    if (userAtt && (userAtt.status === 'LEAVE' || userAtt.status === 'ON_LEAVE')) {
+      return { 
+        type: 'LEAVE', 
+        isLeave: true, 
+        label: 'On Approved Time Off' 
+      };
+    }
+
+    return { 
+      type: 'ABSENT', 
+      color: 'bg-amber-400', 
+      label: 'Absent / Out of Office' 
+    };
   };
 
   const filteredEmployees = employees.filter((emp) => {
@@ -130,7 +165,7 @@ export const HrEmployees = () => {
       {/* Top Action Bar (Matching Wireframe 2: [+ NEW] button on left, Searchbar in center) */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-3.5 rounded-2xl shadow-md">
         
-        {/* Left: [+ NEW] Button */}
+        {/* Left: [+ NEW] Button for Admin/HR */}
         {isHrOrAdmin ? (
           <Button
             onClick={() => setIsAddModalOpen(true)}
@@ -191,8 +226,8 @@ export const HrEmployees = () => {
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {filteredEmployees.map((emp, idx) => {
-            const statusInfo = getEmployeeStatusInfo(emp, idx);
+          {filteredEmployees.map((emp) => {
+            const statusInfo = getEmployeeStatusInfo(emp);
 
             return (
               <div
@@ -208,7 +243,7 @@ export const HrEmployees = () => {
                     </div>
                   ) : (
                     <div className="flex items-center gap-1">
-                      <span className={`w-3.5 h-3.5 rounded-full ${statusInfo.color} shadow-sm`} />
+                      <span className={`w-3.5 h-3.5 rounded-full ${statusInfo.color}`} />
                     </div>
                   )}
                 </div>

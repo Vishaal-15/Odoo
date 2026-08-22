@@ -7,20 +7,18 @@ import {
   LogIn, 
   LogOut, 
   User as UserIcon, 
-  Bell, 
   Shield, 
   BarChart2, 
-  ChevronDown,
-  Building,
-  CheckCircle2,
-  AlertCircle
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useNotification } from '../../hooks/useNotification';
 import { attendanceService } from '../../services/attendanceService';
 import Badge from './Badge';
 
 export const Header = () => {
   const { user, logout } = useAuth();
+  const { addToast } = useNotification();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,8 +30,9 @@ export const Header = () => {
   const isAdmin = role === 'ADMIN';
   const isHr = role === 'HR' || role === 'ADMIN';
 
-  // Load today's punch status
+  // Load today's punch status for the logged in user
   const fetchPunchStatus = async () => {
+    if (isAdmin) return; // Admin does not need check in
     try {
       const today = await attendanceService.getTodayStatus();
       setTodayAttendance(today);
@@ -44,10 +43,10 @@ export const Header = () => {
 
   useEffect(() => {
     fetchPunchStatus();
-    // Poll every 60 seconds
-    const interval = setInterval(fetchPunchStatus, 60000);
+    // Poll every 30 seconds
+    const interval = setInterval(fetchPunchStatus, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   const isCheckedIn = Boolean(
     todayAttendance && 
@@ -70,12 +69,17 @@ export const Header = () => {
     try {
       if (isCheckedIn) {
         await attendanceService.checkOut();
+        addToast('Check-out recorded successfully.', 'success');
       } else {
         await attendanceService.checkIn();
+        addToast('Check-in recorded! You are marked as Present.', 'success');
       }
       await fetchPunchStatus();
+      // Notify employee cards & views in real-time
+      window.dispatchEvent(new Event('attendance-updated'));
     } catch (err) {
       console.error('Punch action failed:', err);
+      addToast(err.message || 'Attendance action failed', 'error');
     } finally {
       setPunchLoading(false);
     }
@@ -175,50 +179,52 @@ export const Header = () => {
         {/* Right: Systray (Live Attendance Punch Widget + Status Dot + Avatar Dropdown) */}
         <div className="flex items-center gap-3 sm:gap-4">
           
-          {/* Live Check-In / Check-Out Systray Widget */}
-          <div className="flex items-center gap-2 bg-slate-800/90 border border-slate-700/80 rounded-lg px-2.5 py-1.5 shadow-sm">
-            {/* Live Status Indicator Dot: Red = Checked Out / Green = Checked In */}
-            <div 
-              className="flex items-center gap-1.5"
-              title={isCheckedIn ? 'Status: Checked In (Present)' : 'Status: Checked Out (Absent)'}
-            >
-              <span 
-                className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                  isCheckedIn 
-                    ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.7)] animate-pulse' 
-                    : 'bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.6)]'
-                }`} 
-              />
-            </div>
+          {/* Employee-Only Live Check-In / Check-Out Systray Widget (Admin doesn't need check-in) */}
+          {!isAdmin && (
+            <div className="flex items-center gap-2 bg-slate-800/90 border border-slate-700/80 rounded-lg px-2.5 py-1.5 shadow-sm">
+              {/* Live Status Indicator Dot: Red = Checked Out / Green = Checked In */}
+              <div 
+                className="flex items-center gap-1.5"
+                title={isCheckedIn ? 'Status: Checked In (Present)' : 'Status: Checked Out (Absent)'}
+              >
+                <span 
+                  className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+                    isCheckedIn 
+                      ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.7)] animate-pulse' 
+                      : 'bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.6)]'
+                  }`} 
+                />
+              </div>
 
-            {/* Quick Punch Action Button */}
-            <button
-              onClick={handlePunchToggle}
-              disabled={punchLoading}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all ${
-                isCheckedIn
-                  ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 hover:border-rose-500'
-                  : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 hover:border-emerald-500'
-              }`}
-            >
-              {punchLoading ? (
-                <span>Updating...</span>
-              ) : isCheckedIn ? (
-                <>
-                  <span className="text-[10px] text-slate-400 font-normal hidden lg:inline">
-                    Since {formatCheckInTime(todayAttendance?.check_in)}
-                  </span>
+              {/* Quick Punch Action Button */}
+              <button
+                onClick={handlePunchToggle}
+                disabled={punchLoading}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all ${
+                  isCheckedIn
+                    ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 hover:border-rose-500'
+                    : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 hover:border-emerald-500'
+                }`}
+              >
+                {punchLoading ? (
+                  <span>Updating...</span>
+                ) : isCheckedIn ? (
+                  <>
+                    <span className="text-[10px] text-slate-400 font-normal hidden lg:inline">
+                      Since {formatCheckInTime(todayAttendance?.check_in)}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      Check Out <LogOut className="w-3 h-3 ml-0.5" />
+                    </span>
+                  </>
+                ) : (
                   <span className="flex items-center gap-1">
-                    Check Out <LogOut className="w-3 h-3 ml-0.5" />
+                    Check IN <LogIn className="w-3 h-3 ml-0.5 text-emerald-400" />
                   </span>
-                </>
-              ) : (
-                <span className="flex items-center gap-1">
-                  Check IN <LogIn className="w-3 h-3 ml-0.5 text-emerald-400" />
-                </span>
-              )}
-            </button>
-          </div>
+                )}
+              </button>
+            </div>
+          )}
 
           {/* User Profile Avatar Dropdown */}
           <div className="relative">

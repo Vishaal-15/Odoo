@@ -21,14 +21,15 @@ class AttendanceService:
         now = datetime.now(timezone.utc)
 
         existing = self.attendance_repo.get_by_user_and_date(user_id, today)
-        if existing and existing.check_in_time is not None:
+        if existing and existing.check_in_time is not None and existing.check_out_time is None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="You have already checked in for today.",
             )
 
         if existing:
-            existing.check_in_time = now
+            existing.check_in_time = existing.check_in_time or now
+            existing.check_out_time = None  # Reopen active shift
             existing.status = AttendanceStatus.PRESENT
             if data.remarks:
                 existing.remarks = data.remarks
@@ -44,6 +45,8 @@ class AttendanceService:
                 remarks=data.remarks,
             )
             return self.attendance_repo.create(record)
+
+
 
     def check_out(self, user_id: int, data: CheckOutRequest) -> Attendance:
         today = date.today()
