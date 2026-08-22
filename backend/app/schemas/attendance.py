@@ -19,6 +19,7 @@ class AttendanceResponse(BaseModel):
     check_in_time: Optional[datetime] = None
     check_out_time: Optional[datetime] = None
     total_hours: float = 0.0
+    extra_hours: float = 0.0
     status: AttendanceStatus
     remarks: Optional[str] = None
     created_at: datetime

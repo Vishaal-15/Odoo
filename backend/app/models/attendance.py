@@ -45,4 +45,10 @@ class Attendance(Base):
         UniqueConstraint("user_id", "date", name="uq_user_attendance_date"),
     )
 
+    @property
+    def extra_hours(self) -> float:
+        """Overtime hours worked beyond standard 8.0 hour working shift."""
+        return round(max(0.0, float(self.total_hours or 0.0) - 8.0), 2)
+
     user = relationship("User", back_populates="attendances")
+

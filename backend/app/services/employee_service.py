@@ -39,6 +39,7 @@ class EmployeeService:
             )
 
         profile = user.profile
+        # Contact & Basic
         if data.phone is not None:
             profile.phone = data.phone
         if data.address is not None:
@@ -47,6 +48,40 @@ class EmployeeService:
             profile.profile_picture_url = data.profile_picture_url
         if data.emergency_contact is not None:
             profile.emergency_contact = data.emergency_contact
+
+        # Resume Fields
+        if data.about is not None:
+            profile.about = data.about
+        if data.what_i_love is not None:
+            profile.what_i_love = data.what_i_love
+        if data.interests_and_hobbies is not None:
+            profile.interests_and_hobbies = data.interests_and_hobbies
+        if data.skills is not None:
+            profile.skills = data.skills
+        if data.certifications is not None:
+            profile.certifications = data.certifications
+
+        # Private Info Fields
+        if data.date_of_birth is not None:
+            profile.date_of_birth = data.date_of_birth
+        if data.nationality is not None:
+            profile.nationality = data.nationality
+        if data.personal_email is not None:
+            profile.personal_email = data.personal_email
+        if data.gender is not None:
+            profile.gender = data.gender
+        if data.marital_status is not None:
+            profile.marital_status = data.marital_status
+        if data.bank_name is not None:
+            profile.bank_name = data.bank_name
+        if data.account_number is not None:
+            profile.account_number = data.account_number
+        if data.ifsc_code is not None:
+            profile.ifsc_code = data.ifsc_code
+        if data.pan_no is not None:
+            profile.pan_no = data.pan_no
+        if data.uan_no is not None:
+            profile.uan_no = data.uan_no
 
         self.db.commit()
         self.db.refresh(user)
@@ -107,12 +142,18 @@ class EmployeeService:
             profile.address = data.address
         if data.profile_picture_url is not None:
             profile.profile_picture_url = data.profile_picture_url
+        if data.company_name is not None:
+            profile.company_name = data.company_name.strip()
         if data.department is not None:
             changes["department"] = {"old": profile.department, "new": data.department}
             profile.department = data.department.strip()
         if data.designation is not None:
             changes["designation"] = {"old": profile.designation, "new": data.designation}
             profile.designation = data.designation.strip()
+        if data.manager_name is not None:
+            profile.manager_name = data.manager_name.strip()
+        if data.location is not None:
+            profile.location = data.location.strip()
         if data.joining_date is not None:
             profile.joining_date = data.joining_date
         if data.emergency_contact is not None:
@@ -120,6 +161,40 @@ class EmployeeService:
         if data.basic_salary is not None and data.basic_salary != profile.basic_salary:
             changes["basic_salary"] = {"old": profile.basic_salary, "new": data.basic_salary}
             profile.basic_salary = data.basic_salary
+
+        # Resume Fields
+        if data.about is not None:
+            profile.about = data.about
+        if data.what_i_love is not None:
+            profile.what_i_love = data.what_i_love
+        if data.interests_and_hobbies is not None:
+            profile.interests_and_hobbies = data.interests_and_hobbies
+        if data.skills is not None:
+            profile.skills = data.skills
+        if data.certifications is not None:
+            profile.certifications = data.certifications
+
+        # Private Info Fields
+        if data.date_of_birth is not None:
+            profile.date_of_birth = data.date_of_birth
+        if data.nationality is not None:
+            profile.nationality = data.nationality
+        if data.personal_email is not None:
+            profile.personal_email = data.personal_email
+        if data.gender is not None:
+            profile.gender = data.gender
+        if data.marital_status is not None:
+            profile.marital_status = data.marital_status
+        if data.bank_name is not None:
+            profile.bank_name = data.bank_name
+        if data.account_number is not None:
+            profile.account_number = data.account_number
+        if data.ifsc_code is not None:
+            profile.ifsc_code = data.ifsc_code
+        if data.pan_no is not None:
+            profile.pan_no = data.pan_no
+        if data.uan_no is not None:
+            profile.uan_no = data.uan_no
 
         self.db.commit()
         self.db.refresh(user)

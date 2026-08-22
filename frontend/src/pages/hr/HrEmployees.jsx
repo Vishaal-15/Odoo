@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
 import { employeeService } from '../../services/employeeService';
@@ -8,38 +9,32 @@ import Modal from '../../components/common/Modal';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
-import PageHeader from '../../components/common/PageHeader';
 import EmptyState from '../../components/common/EmptyState';
-import { TableSkeleton } from '../../components/common/Skeleton';
 import {
   Users,
   Search,
   Plus,
-  Edit,
-  Eye,
-  Filter,
-  Briefcase,
-  Building,
   Mail,
   Phone,
-  Calendar,
-  Building2,
+  Plane,
+  Building,
   CheckCircle2,
+  Calendar,
+  Briefcase,
+  ExternalLink
 } from 'lucide-react';
-import { formatDate } from '../../utils/formatters';
 
 export const HrEmployees = () => {
   const { user } = useAuth();
   const { addToast } = useNotification();
+  const navigate = useNavigate();
 
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('ALL');
 
-  // Modal states
-  const [viewEmployee, setViewEmployee] = useState(null);
-  const [editEmployee, setEditEmployee] = useState(null);
+  // Modal for new employee
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -48,12 +43,14 @@ export const HrEmployees = () => {
     last_name: '',
     email: '',
     role: 'EMPLOYEE',
-    department: 'Software Engineering',
+    department: 'Engineering',
     job_title: 'Software Engineer',
     phone: '',
-    address: '',
+    company_name: 'Odoo India',
     hire_date: new Date().toISOString().split('T')[0],
   });
+
+  const isHrOrAdmin = user?.role === 'ADMIN' || user?.role === 'HR';
 
   const loadEmployees = async () => {
     setLoading(true);
@@ -83,32 +80,33 @@ export const HrEmployees = () => {
         last_name: '',
         email: '',
         role: 'EMPLOYEE',
-        department: 'Software Engineering',
+        department: 'Engineering',
         job_title: 'Software Engineer',
         phone: '',
-        address: '',
+        company_name: 'Odoo India',
         hire_date: new Date().toISOString().split('T')[0],
       });
-      addToast('Employee onboarded successfully!', 'success');
+      addToast(`Employee ${created.first_name} onboarded! Login ID: ${created.employee_id}`, 'success');
     } catch (err) {
-      addToast(err.message || 'Failed to create employee', 'error');
+      addToast(err.message || 'Failed to onboard employee', 'error');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleUpdateEmployee = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      const updated = await employeeService.updateEmployee(editEmployee.id, editEmployee);
-      setEmployees((prev) => prev.map((emp) => (emp.id === updated.id ? updated : emp)));
-      setEditEmployee(null);
-      addToast('Employee record updated successfully.', 'success');
-    } catch (err) {
-      addToast(err.message || 'Failed to update employee', 'error');
-    } finally {
-      setSaving(false);
+  // Status generator for wireframe alignment (Present 🟢, On Leave ✈️, Absent 🟡)
+  const getEmployeeStatusInfo = (emp, idx) => {
+    // If deactivated
+    if (emp.is_active === false) {
+      return { type: 'ABSENT', color: 'bg-amber-500', label: 'Absent' };
+    }
+    // Simulation / Mapping:
+    if (emp.role === 'ADMIN' || idx % 3 === 0) {
+      return { type: 'PRESENT', color: 'bg-emerald-500', label: 'Present in Office' };
+    } else if (idx % 3 === 1) {
+      return { type: 'LEAVE', isLeave: true, label: 'On Approved Time Off' };
+    } else {
+      return { type: 'ABSENT', color: 'bg-amber-400', label: 'Absent / Out of Office' };
     }
   };
 
@@ -116,11 +114,11 @@ export const HrEmployees = () => {
     const fullName = `${emp.first_name} ${emp.last_name}`.toLowerCase();
     const matchesSearch =
       fullName.includes(searchTerm.toLowerCase()) ||
-      emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (emp.employee_id && emp.employee_id.toLowerCase().includes(searchTerm.toLowerCase()));
+      (emp.email && emp.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (emp.employee_id && emp.employee_id.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (emp.department && emp.department.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesDept = selectedDept === 'ALL' || emp.department === selectedDept;
-
     return matchesSearch && matchesDept;
   });
 
@@ -128,34 +126,44 @@ export const HrEmployees = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Employee Directory & Staff Records"
-        subtitle="Manage company staff profiles, department assignments, and onboarding records"
-        breadcrumbs={['HR Operations', 'Employee Records']}
-        actions={
-          <Button onClick={() => setIsAddModalOpen(true)} variant="primary" size="sm" icon={Plus}>
-            Onboard New Employee
+      
+      {/* Top Action Bar (Matching Wireframe 2: [+ NEW] button on left, Searchbar in center) */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-3.5 rounded-2xl shadow-md">
+        
+        {/* Left: [+ NEW] Button */}
+        {isHrOrAdmin ? (
+          <Button
+            onClick={() => setIsAddModalOpen(true)}
+            variant="primary"
+            size="md"
+            icon={Plus}
+            className="bg-purple-600 hover:bg-purple-500 text-white font-bold shadow-md px-5 w-full sm:w-auto"
+          >
+            NEW
           </Button>
-        }
-      />
+        ) : (
+          <div className="text-xs font-bold text-slate-400">
+            Employees Directory
+          </div>
+        )}
 
-      {/* Filter and Search Bar Card */}
-      <Card noPadding bodyClassName="p-4">
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <div className="flex-1 w-full">
+        {/* Center/Right: Searchbar & Department Filter */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto flex-1 max-w-2xl justify-end">
+          <div className="w-full flex-1 relative">
             <Input
-              placeholder="Search by employee name, work email, or ID..."
+              placeholder="Search employee by name, login id, email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               icon={Search}
+              className="bg-slate-950/80 border-slate-700"
             />
           </div>
 
-          <div className="w-full sm:w-64">
+          <div className="w-full sm:w-48">
             <Select
               value={selectedDept}
               onChange={(e) => setSelectedDept(e.target.value)}
-              icon={Filter}
+              className="bg-slate-950/80 border-slate-700"
             >
               {departments.map((dept) => (
                 <option key={dept} value={dept}>
@@ -165,180 +173,90 @@ export const HrEmployees = () => {
             </Select>
           </div>
         </div>
-      </Card>
 
-      {/* Employee List Table */}
-      <Card
-        title={`Staff Roster (${filteredEmployees.length})`}
-        subtitle="Active staff profiles and organizational roles"
-      >
-        {loading ? (
-          <TableSkeleton rows={5} cols={6} />
-        ) : filteredEmployees.length === 0 ? (
-          <EmptyState
-            icon={Users}
-            title="No employees found"
-            description="No staff members match the current search query or department filter."
-          />
-        ) : (
-          <div className="saas-table-container">
-            <table className="saas-table">
-              <thead>
-                <tr>
-                  <th>Employee</th>
-                  <th>Role & Department</th>
-                  <th>Contact</th>
-                  <th>Joined Date</th>
-                  <th>Status</th>
-                  <th className="text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEmployees.map((emp) => (
-                  <tr key={emp.id}>
-                    {/* Avatar & Name */}
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={emp.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-                          alt={emp.first_name}
-                          className="w-9 h-9 rounded-xl object-cover border border-slate-700/60 shrink-0"
-                        />
-                        <div>
-                          <div className="font-semibold text-slate-100">
-                            {emp.first_name} {emp.last_name}
-                          </div>
-                          <div className="text-[11px] font-mono text-slate-400">
-                            {emp.employee_id || `EMP-${emp.id}`}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
+      </div>
 
-                    {/* Role & Dept */}
-                    <td>
-                      <div className="font-medium text-slate-200">{emp.job_title || 'Staff'}</div>
-                      <div className="text-xs text-slate-400">{emp.department || 'General'}</div>
-                    </td>
+      {/* Main Kanban Cards Grid (Wireframe 2) */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="h-44 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      ) : filteredEmployees.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="No employees found"
+          description="Try adjusting your search query or department filter."
+        />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {filteredEmployees.map((emp, idx) => {
+            const statusInfo = getEmployeeStatusInfo(emp, idx);
 
-                    {/* Contact */}
-                    <td>
-                      <div className="text-xs text-slate-300">{emp.email}</div>
-                      <div className="text-[11px] text-slate-500">{emp.phone || '—'}</div>
-                    </td>
-
-                    {/* Date */}
-                    <td className="text-xs text-slate-400">
-                      {formatDate(emp.hire_date || '2023-01-01')}
-                    </td>
-
-                    {/* Status */}
-                    <td>
-                      <Badge status={emp.is_active ? 'ACTIVE' : 'INACTIVE'} size="xs" />
-                    </td>
-
-                    {/* Actions */}
-                    <td className="text-right">
-                      <div className="inline-flex items-center gap-1.5">
-                        <Button
-                          onClick={() => setViewEmployee(emp)}
-                          variant="ghost"
-                          size="xs"
-                          icon={Eye}
-                        >
-                          View
-                        </Button>
-                        <Button
-                          onClick={() => setEditEmployee({ ...emp })}
-                          variant="ghost"
-                          size="xs"
-                          icon={Edit}
-                        >
-                          Edit
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-
-      {/* View Employee Modal */}
-      <Modal
-        isOpen={Boolean(viewEmployee)}
-        onClose={() => setViewEmployee(null)}
-        title="Employee Profile Card"
-        subtitle="Detailed staff credentials & contact records"
-      >
-        {viewEmployee && (
-          <div className="space-y-5">
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-950/60 border border-slate-800">
-              <img
-                src={viewEmployee.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-                alt=""
-                className="w-14 h-14 rounded-xl object-cover border border-slate-700/60"
-              />
-              <div className="space-y-1">
-                <div className="text-lg font-bold text-slate-100 font-sans">
-                  {viewEmployee.first_name} {viewEmployee.last_name}
-                </div>
-                <div className="text-xs text-slate-400">
-                  {viewEmployee.job_title} • {viewEmployee.department}
-                </div>
-                <div className="text-xs text-slate-400 flex items-center gap-2">
-                  <span>ID: <strong className="text-slate-200">{viewEmployee.employee_id || `EMP-${viewEmployee.id}`}</strong></span>
-                  <span>•</span>
-                  <Badge status={viewEmployee.role} size="xs" />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
-              <div className="p-3 rounded-lg bg-slate-950/40 border border-slate-800">
-                <span className="text-slate-500 block text-xs">Work Email</span>
-                <span className="font-semibold text-slate-200">{viewEmployee.email}</span>
-              </div>
-              <div className="p-3 rounded-lg bg-slate-950/40 border border-slate-800">
-                <span className="text-slate-500 block text-xs">Phone Number</span>
-                <span className="font-semibold text-slate-200">{viewEmployee.phone || '—'}</span>
-              </div>
-              <div className="p-3 rounded-lg bg-slate-950/40 border border-slate-800">
-                <span className="text-slate-500 block text-xs">Date of Joining</span>
-                <span className="font-semibold text-slate-200">{formatDate(viewEmployee.hire_date)}</span>
-              </div>
-              <div className="p-3 rounded-lg bg-slate-950/40 border border-slate-800">
-                <span className="text-slate-500 block text-xs">Residential Address</span>
-                <span className="font-semibold text-slate-200">{viewEmployee.address || '—'}</span>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2.5 pt-2">
-              <Button
-                variant="primary"
-                icon={Edit}
-                size="sm"
-                onClick={() => {
-                  const toEdit = { ...viewEmployee };
-                  setViewEmployee(null);
-                  setEditEmployee(toEdit);
-                }}
+            return (
+              <div
+                key={emp.id}
+                onClick={() => navigate('/profile')}
+                className="group bg-slate-900 border border-slate-800 hover:border-purple-500/60 rounded-2xl p-5 shadow-lg hover:shadow-purple-500/10 transition-all duration-200 cursor-pointer relative flex flex-col justify-between"
               >
-                Edit Staff Profile
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
+                {/* Top-Right Status Dot Indicator (Wireframe 2: 🟢 Present, ✈️ On Leave, 🟡 Absent) */}
+                <div className="absolute top-4 right-4" title={statusInfo.label}>
+                  {statusInfo.isLeave ? (
+                    <div className="w-6 h-6 rounded-full bg-sky-500/20 border border-sky-500/40 text-sky-400 flex items-center justify-center">
+                      <Plane className="w-3.5 h-3.5" />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <span className={`w-3.5 h-3.5 rounded-full ${statusInfo.color} shadow-sm`} />
+                    </div>
+                  )}
+                </div>
 
-      {/* Add Employee Modal */}
+                {/* Card Body: Avatar, Name, Role, Login ID */}
+                <div className="flex items-start gap-3.5">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white flex items-center justify-center font-bold text-base shadow-md overflow-hidden shrink-0 border border-purple-400/30">
+                    {emp.avatar ? (
+                      <img src={emp.avatar} alt={emp.first_name} className="w-full h-full object-cover" />
+                    ) : (
+                      emp.first_name ? emp.first_name[0].toUpperCase() : 'U'
+                    )}
+                  </div>
+
+                  <div className="space-y-0.5 pr-6">
+                    <h3 className="font-bold text-slate-100 group-hover:text-purple-300 transition-colors text-sm line-clamp-1">
+                      {emp.first_name} {emp.last_name}
+                    </h3>
+                    <p className="text-xs text-slate-400 line-clamp-1">
+                      {emp.job_title || emp.designation || 'Staff Member'}
+                    </p>
+                    <p className="text-[11px] font-mono text-purple-400">
+                      {emp.employee_id || `EMP-${emp.id}`}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card Footer: Department & Contact */}
+                <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+                  <span className="truncate max-w-[120px] font-medium text-slate-300">
+                    {emp.department || 'General'}
+                  </span>
+                  <span className="text-[10px] text-purple-400 flex items-center gap-1 group-hover:underline">
+                    View Profile <ExternalLink className="w-2.5 h-2.5" />
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Modal: Onboard New Employee */}
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         title="Onboard New Employee"
-        subtitle="Add a staff profile to the organization database"
+        subtitle="Automatic Odoo Login ID will be generated (e.g. OIJODO20230001)"
       >
         <form onSubmit={handleAddEmployee} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -347,14 +265,14 @@ export const HrEmployees = () => {
               required
               value={newEmployeeData.first_name}
               onChange={(e) => setNewEmployeeData({ ...newEmployeeData, first_name: e.target.value })}
-              placeholder="Marcus"
+              placeholder="Sarah"
             />
             <Input
               label="Last Name"
               required
               value={newEmployeeData.last_name}
               onChange={(e) => setNewEmployeeData({ ...newEmployeeData, last_name: e.target.value })}
-              placeholder="Brody"
+              placeholder="Connor"
             />
           </div>
 
@@ -365,33 +283,35 @@ export const HrEmployees = () => {
               required
               value={newEmployeeData.email}
               onChange={(e) => setNewEmployeeData({ ...newEmployeeData, email: e.target.value })}
-              placeholder="marcus@dayflow.com"
+              placeholder="sarah@odoo.com"
             />
-            <Select
-              label="Role"
-              value={newEmployeeData.role}
-              onChange={(e) => setNewEmployeeData({ ...newEmployeeData, role: e.target.value })}
-            >
-              <option value="EMPLOYEE">Employee</option>
-              <option value="HR">HR Officer</option>
-              <option value="ADMIN">System Administrator</option>
-            </Select>
+            <Input
+              label="Phone Number"
+              value={newEmployeeData.phone}
+              onChange={(e) => setNewEmployeeData({ ...newEmployeeData, phone: e.target.value })}
+              placeholder="+91 98765 43210"
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
+            <Select
               label="Department"
-              required
               value={newEmployeeData.department}
               onChange={(e) => setNewEmployeeData({ ...newEmployeeData, department: e.target.value })}
-              placeholder="Marketing & Growth"
-            />
+            >
+              <option value="Engineering">Engineering</option>
+              <option value="Sales & Marketing">Sales & Marketing</option>
+              <option value="Finance & Operations">Finance & Operations</option>
+              <option value="Human Resources">Human Resources</option>
+              <option value="Product & Design">Product & Design</option>
+            </Select>
+
             <Input
-              label="Job Title"
+              label="Designation / Job Title"
               required
               value={newEmployeeData.job_title}
               onChange={(e) => setNewEmployeeData({ ...newEmployeeData, job_title: e.target.value })}
-              placeholder="Marketing Lead"
+              placeholder="UI/UX Specialist"
             />
           </div>
 
@@ -400,79 +320,12 @@ export const HrEmployees = () => {
               Cancel
             </Button>
             <Button type="submit" variant="primary" isLoading={saving}>
-              Onboard Employee
+              Create Employee & Generate ID
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* Edit Employee Modal */}
-      <Modal
-        isOpen={Boolean(editEmployee)}
-        onClose={() => setEditEmployee(null)}
-        title="Edit Employee Details"
-        subtitle="Update employee role, department, and contact information"
-      >
-        {editEmployee && (
-          <form onSubmit={handleUpdateEmployee} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="First Name"
-                required
-                value={editEmployee.first_name}
-                onChange={(e) => setEditEmployee({ ...editEmployee, first_name: e.target.value })}
-              />
-              <Input
-                label="Last Name"
-                required
-                value={editEmployee.last_name}
-                onChange={(e) => setEditEmployee({ ...editEmployee, last_name: e.target.value })}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="Department"
-                required
-                value={editEmployee.department}
-                onChange={(e) => setEditEmployee({ ...editEmployee, department: e.target.value })}
-              />
-              <Input
-                label="Job Title"
-                required
-                value={editEmployee.job_title}
-                onChange={(e) => setEditEmployee({ ...editEmployee, job_title: e.target.value })}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Select
-                label="Role"
-                value={editEmployee.role}
-                onChange={(e) => setEditEmployee({ ...editEmployee, role: e.target.value })}
-              >
-                <option value="EMPLOYEE">Employee</option>
-                <option value="HR">HR Officer</option>
-                <option value="ADMIN">System Administrator</option>
-              </Select>
-              <Input
-                label="Phone"
-                value={editEmployee.phone || ''}
-                onChange={(e) => setEditEmployee({ ...editEmployee, phone: e.target.value })}
-              />
-            </div>
-
-            <div className="flex justify-end gap-2.5 pt-3">
-              <Button type="button" variant="outline" onClick={() => setEditEmployee(null)}>
-                Cancel
-              </Button>
-              <Button type="submit" variant="primary" isLoading={saving}>
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        )}
-      </Modal>
     </div>
   );
 };

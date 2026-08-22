@@ -28,6 +28,30 @@ class AuthService:
         self.token_repo = TokenRepository(db)
         self.audit_repo = AuditRepository(db)
 
+    def generate_login_id(self, first_name: str, last_name: str, joining_date_val: Optional[date] = None, company_name: str = "Odoo India") -> str:
+        """
+        Generate Login ID in format:
+        [OI (first two letters of company)][first 2 letters of first + last name][year of joining][serial number of joining]
+        Example: OIJODO20220001
+        """
+        year = (joining_date_val or date.today()).year
+        # Compute company initials (default 'OI' for Odoo India)
+        words = [w.strip() for w in company_name.split() if w.strip()]
+        if len(words) >= 2:
+            company_code = (words[0][0] + words[1][0]).upper()
+        elif len(words) == 1 and len(words[0]) >= 2:
+            company_code = words[0][:2].upper()
+        else:
+            company_code = "OI"
+
+        fn_2 = (first_name[:2] if len(first_name) >= 2 else first_name.ljust(2, "X")).upper()
+        ln_2 = (last_name[:2] if len(last_name) >= 2 else last_name.ljust(2, "X")).upper()
+        prefix = f"{company_code}{fn_2}{ln_2}{year}"
+
+        count = self.db.query(User).filter(User.employee_id.like(f"{prefix}%")).count()
+        serial = f"{count + 1:04d}"
+        return f"{prefix}{serial}"
+
     def register(
         self,
         data: UserRegister,
@@ -45,20 +69,33 @@ class AuthService:
                 detail="A user with this email already exists.",
             )
 
-        # Check duplicate employee_id
-        existing_emp_id = self.user_repo.get_by_employee_id(data.employee_id)
-        if existing_emp_id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="A user with this Employee ID already exists.",
+        # Determine employee_id: if provided explicitly, check duplicate; if empty, auto-generate
+        joining_date_val = data.joining_date or date.today()
+        if data.employee_id and data.employee_id.strip():
+            emp_id = data.employee_id.strip()
+            existing_emp_id = self.user_repo.get_by_employee_id(emp_id)
+            if existing_emp_id:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="A user with this Employee ID already exists.",
+                )
+        else:
+            emp_id = self.generate_login_id(
+                first_name=data.first_name,
+                last_name=data.last_name,
+                joining_date_val=joining_date_val,
+                company_name=getattr(data, "company_name", "Odoo India") or "Odoo India",
             )
+            existing_emp_id = self.user_repo.get_by_employee_id(emp_id)
+            if existing_emp_id:
+                emp_id = f"{emp_id[:-4]}{int(emp_id[-4:]) + 1:04d}"
 
         # Create verification token
         verification_token = generate_secure_token()
         hashed_password = get_password_hash(data.password)
 
         new_user = User(
-            employee_id=data.employee_id.strip(),
+            employee_id=emp_id,
             email=data.email.lower().strip(),
             hashed_password=hashed_password,
             role=data.role or RoleEnum.EMPLOYEE,
@@ -73,7 +110,7 @@ class AuthService:
             phone=data.phone,
             department=data.department or "General",
             designation=data.designation or "Employee",
-            joining_date=data.joining_date or date.today(),
+            joining_date=joining_date_val,
             basic_salary=0.0,
         )
 
@@ -83,7 +120,7 @@ class AuthService:
         self.notif_repo.create_notification(
             user_id=user.id,
             title="Welcome to Dayflow HRMS!",
-            message="Your account has been created. Please verify your email address to complete onboarding.",
+            message=f"Your account has been created. Your Login ID is: {emp_id}",
             notif_type=NotificationType.GENERAL,
         )
 
@@ -93,7 +130,7 @@ class AuthService:
             action="USER_REGISTER",
             resource_type="USER",
             resource_id=str(user.id),
-            details=f"User {user.email} registered with role {user.role.value}",
+            details=f"User {user.email} (ID: {user.employee_id}) registered with role {user.role.value}",
             ip_address=ip_address,
             user_agent=user_agent,
         )
@@ -106,13 +143,15 @@ class AuthService:
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
     ) -> dict:
-        user = self.user_repo.get_by_email(data.email)
+        identifier = data.email.strip()
+        # Support login via either email address or Employee Login ID
+        user = self.user_repo.get_by_email(identifier) or self.user_repo.get_by_employee_id(identifier)
         if not user or not verify_password(data.password, user.hashed_password):
             self.audit_repo.create_log(
                 actor_id=user.id if user else None,
                 action="LOGIN_FAILED",
                 resource_type="USER",
-                resource_id=str(user.id) if user else data.email,
+                resource_id=str(user.id) if user else identifier,
                 details="Failed authentication attempt: invalid credentials",
                 ip_address=ip_address,
                 user_agent=user_agent,

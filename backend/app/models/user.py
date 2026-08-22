@@ -71,11 +71,34 @@ class EmployeeProfile(Base):
     phone = Column(String(20), nullable=True)
     address = Column(Text, nullable=True)
     profile_picture_url = Column(String(500), nullable=True)
+    company_name = Column(String(100), default="Odoo India", nullable=False)
     department = Column(String(100), nullable=False, default="General", index=True)
     designation = Column(String(100), nullable=False, default="Employee")
+    manager_name = Column(String(100), nullable=True)
+    location = Column(String(100), default="Headquarters", nullable=True)
     joining_date = Column(Date, nullable=False, default=date.today)
     emergency_contact = Column(String(50), nullable=True)
-    basic_salary = Column(Float, nullable=False, default=0.0)
+    basic_salary = Column(Float, nullable=False, default=50000.0)
+
+    # Resume Tab Fields
+    about = Column(Text, nullable=True)
+    what_i_love = Column(Text, nullable=True)
+    interests_and_hobbies = Column(Text, nullable=True)
+    skills = Column(Text, nullable=True)
+    certifications = Column(Text, nullable=True)
+
+    # Private Info Tab Fields
+    date_of_birth = Column(Date, nullable=True)
+    nationality = Column(String(50), default="Indian", nullable=True)
+    personal_email = Column(String(255), nullable=True)
+    gender = Column(String(20), nullable=True)
+    marital_status = Column(String(20), nullable=True)
+    bank_name = Column(String(100), nullable=True)
+    account_number = Column(String(50), nullable=True)
+    ifsc_code = Column(String(30), nullable=True)
+    pan_no = Column(String(30), nullable=True)
+    uan_no = Column(String(30), nullable=True)
+
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(
         DateTime(timezone=True),
@@ -85,3 +108,4 @@ class EmployeeProfile(Base):
     )
 
     user = relationship("User", back_populates="profile")
+
