@@ -264,12 +264,24 @@ export const HrPayroll = () => {
               />
             </div>
 
+            {selectedRecord.remarks && (
+              <div className="p-3.5 rounded-xl bg-purple-950/20 border border-purple-500/20 text-xs">
+                <div className="text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-1">
+                  Attendance & Leave Computation Basis:
+                </div>
+                <p className="text-slate-300 font-mono text-[11px] leading-relaxed">
+                  {selectedRecord.remarks}
+                </p>
+              </div>
+            )}
+
             <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 flex justify-between items-center">
               <span className="text-xs text-slate-400">Computed Net Take-Home:</span>
               <span className="text-base font-bold text-emerald-400 font-sans">
                 {formatCurrency(selectedRecord.net_salary)}
               </span>
             </div>
+
 
             <div className="flex justify-end gap-2.5 pt-3">
               <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>

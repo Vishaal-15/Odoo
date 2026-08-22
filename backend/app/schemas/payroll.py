@@ -47,3 +47,11 @@ class PayrollResponse(BaseModel):
 class PayrollListResponse(BaseModel):
     total: int
     items: List[PayrollResponse]
+
+
+class PayrollGenerateBatchRequest(BaseModel):
+    month: Optional[int] = Field(default=None, ge=1, le=12, examples=[8])
+    year: Optional[int] = Field(default=None, ge=2000, le=2100, examples=[2026])
+    working_days: Optional[int] = Field(default=22, ge=1, le=31, examples=[22])
+    pay_period: Optional[str] = Field(default=None, examples=["August 2026"])
+

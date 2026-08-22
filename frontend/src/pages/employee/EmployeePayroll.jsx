@@ -213,13 +213,25 @@ export const EmployeePayroll = () => {
               </div>
             </div>
 
+            {/* Attendance & Leave Computation Basis */}
+            {selectedPayslip.remarks && (
+              <div className="p-3.5 rounded-xl bg-purple-950/20 border border-purple-500/20 text-xs">
+                <div className="text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-1">
+                  Attendance & Leave Computation Basis:
+                </div>
+                <p className="text-slate-300 font-mono text-[11px] leading-relaxed">
+                  {selectedPayslip.remarks}
+                </p>
+              </div>
+            )}
+
             {/* Total Net Take-Home */}
-            <div className="p-4 rounded-xl bg-gradient-to-r from-brand-950/50 to-slate-900 border border-brand-500/30 flex justify-between items-center">
+            <div className="p-4 rounded-xl bg-gradient-to-r from-purple-950/50 to-slate-900 border border-purple-500/30 flex justify-between items-center">
               <div>
-                <div className="text-xs font-semibold text-brand-300">Net Take-Home Disbursed</div>
+                <div className="text-xs font-semibold text-purple-300">Net Take-Home Disbursed</div>
                 <div className="text-xs text-slate-400">Paid on {formatDate(selectedPayslip.payment_date)}</div>
               </div>
-              <div className="text-xl font-bold text-white font-sans">
+              <div className="text-2xl font-black text-emerald-400 font-mono">
                 {formatCurrency(selectedPayslip.net_salary)}
               </div>
             </div>

@@ -10,7 +10,9 @@ from app.schemas.payroll import (
     PayrollUpdateRequest,
     PayrollResponse,
     PayrollListResponse,
+    PayrollGenerateBatchRequest,
 )
+
 from app.services.payroll_service import PayrollService
 
 router = APIRouter(prefix="/payroll", tags=["Payroll Management"])
@@ -66,6 +68,32 @@ def list_all_payroll(
 
 
 @router.post(
+    "/generate",
+    status_code=status.HTTP_200_OK,
+    summary="Batch execute attendance-driven payroll cycle (HR/Admin only)",
+)
+def generate_payroll_batch(
+    payload: Optional[PayrollGenerateBatchRequest] = None,
+    _: User = Depends(require_hr),
+    db: Session = Depends(get_db),
+):
+    """
+    HR and Admin can trigger automated attendance-based payslip generation for the workforce.
+    """
+    service = PayrollService(db)
+    month = payload.month if payload else None
+    year = payload.year if payload else None
+    working_days = payload.working_days if payload and payload.working_days else 22
+    pay_period = payload.pay_period if payload else None
+    return service.generate_monthly_payroll_batch(
+        month=month,
+        year=year,
+        working_days=working_days,
+        pay_period=pay_period,
+    )
+
+
+@router.post(
     "",
     response_model=PayrollResponse,
     status_code=status.HTTP_201_CREATED,
@@ -81,6 +109,7 @@ def create_payroll(
     """
     service = PayrollService(db)
     return service.create_payroll(data)
+
 
 
 @router.get(
