@@ -2,26 +2,24 @@
 
 > *Every workday, perfectly aligned.*
 
-Dayflow HRMS is a comprehensive Human Resource Management System designed to digitize and streamline employee onboarding, profile management, daily/weekly attendance tracking, leave requests with approval workflows, payroll visibility, and intelligent analytics.
+Dayflow HRMS is an enterprise-grade Human Resource Management System designed to digitize and streamline employee onboarding, profile management, daily/weekly attendance tracking, leave requests with approval workflows, payroll visibility, and intelligent analytics.
 
 ---
 
 ## 👥 Hackathon Team & Responsibilities
 
-| Role | Responsibility | Tech Stack |
+| Role | Domain | Tech Stack & Scope |
 | :--- | :--- | :--- |
-| **Developer 1** | **Backend & APIs** | FastAPI, SQLAlchemy 2.0, JWT Auth, Pydantic, Business Logic |
-| **Developer 2** | **Frontend & UI** | React, Vite, Modern Dashboard UI, Routing, API Integration |
-| **Developer 3** | **Database & Infrastructure** | PostgreSQL 16 (Docker), Alembic, Docker Compose, DB Schema |
-| **Developer 4** | **AI & Analytics** | Historical Analytics, Predictive Insights, Background Notifications |
+| **Developer 1** | **Backend** | FastAPI, SQLAlchemy 2.0, JWT Authentication, RBAC, Core APIs, Testing |
+| **Developer 2** | **Frontend** | React, Vite, Modern Dashboard UI, Routing, Responsive Design, API Integration |
+| **Developer 3** | **Database & Infra** | PostgreSQL 16 (Docker), Alembic Migrations, Docker Compose, DB Optimization |
+| **Developer 4** | **AI & Analytics** | Historical Analytics, Predictive Insights, Notifications, Background Processing |
 
 ---
 
-## 🚀 Quickstart Guide (Zero Local PostgreSQL Required)
+## 🚀 Quickstart Guide
 
-Developers **do NOT need to install PostgreSQL locally**. Everything runs seamlessly via Docker Compose.
-
-### 1. Clone & Configure Environment
+### 1. Database & Infrastructure Setup (Zero Local PostgreSQL Required)
 ```bash
 # Pull latest code
 git pull origin main
@@ -29,33 +27,36 @@ git pull origin main
 # Create local .env file
 cp .env.example .env        # Linux/macOS
 copy .env.example .env      # Windows PowerShell/CMD
-```
 
-### 2. Start PostgreSQL Container
-```bash
-# Start PostgreSQL in background
+# Start PostgreSQL Container via Docker
 docker compose up -d postgres
 
-# Verify container is healthy
-docker ps
-```
-
-### 3. Run Database Migrations (Alembic)
-```bash
-# Apply all schema migrations to PostgreSQL
+# Apply Alembic Migrations
 python -m alembic upgrade head
-```
 
-### 4. Seed Development Data
-```bash
-# Populate database with departments, users, attendance, leaves, and payrolls
+# Seed Initial Development Data
 python -m database.seed
 ```
 
-### 5. Verify Setup & Connectivity
+### 2. Run the FastAPI Backend
 ```bash
-# Run database verification test
-python database/scripts/test_connection.py
+cd backend
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Linux/macOS:
+# source venv/bin/activate
+
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+- **Interactive API Docs (Swagger UI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Alternative Docs (ReDoc)**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+### 3. Run Backend Test Suite
+```bash
+pytest backend/tests -v
 ```
 
 ---
@@ -75,6 +76,15 @@ The database comes pre-seeded with realistic test accounts:
 
 ---
 
+## 🔒 Security & Role-Based Access Control (RBAC)
+
+The system enforces strict role-based access control (RBAC) across three distinct roles:
+- `EMPLOYEE`: Access to own profile, check-in/out, personal leave applications, and view-only personal payroll.
+- `HR`: Manage all employee profiles, review and approve/reject leave requests, view organization-wide attendance, and manage payroll.
+- `ADMIN`: Full administrative power across system configurations, user roles, payroll structures, and HR approvals.
+
+---
+
 ## 📁 Repository Structure
 
 ```text
@@ -88,29 +98,26 @@ odoo/
 │   ├── database-schema.md        # Complete DB schema, constraints & indexes
 │   ├── architecture.md           # System topology & container network
 │   └── api-contract.md           # REST API endpoint reference
-└── database/
-    ├── config.py                 # Environment & DB connection configuration
-    ├── connection.py             # Engine, SessionLocal, get_db dependency
-    ├── init.sql                  # PostgreSQL container initial extensions
-    ├── seed.py                   # Idempotent Python development seed script
-    ├── seed_data.sql             # Pure SQL development seed script
-    ├── models/                   # SQLAlchemy 2.0 ORM Models
-    │   ├── __init__.py           # Re-exports all models & enums
-    │   ├── enums.py              # Domain enumerations (Roles, Statuses)
-    │   ├── user.py               # User authentication accounts
-    │   ├── department.py         # Department structure
-    │   ├── employee.py           # Employee profile & job details
-    │   ├── attendance.py         # Daily attendance & work hours
-    │   ├── leave.py              # Leave types & approval requests
-    │   ├── payroll.py            # Salary structures & monthly payslips
-    │   ├── notification.py       # Notifications & system alerts
-    │   └── audit_log.py          # Security & operational audit logs
-    ├── migrations/               # Alembic version control
-    │   ├── env.py                # Alembic runtime configuration
-    │   └── versions/             # Migration revision files
-    └── scripts/
-        ├── test_connection.py    # Health check & table counts test
-        └── reset_db.py           # Complete DB rollback, migrate & reseed
+├── database/                     # Database & Infrastructure (Dev 3)
+│   ├── config.py                 # Environment & DB connection configuration
+│   ├── connection.py             # Engine, SessionLocal, get_db dependency
+│   ├── init.sql                  # PostgreSQL container initial extensions
+│   ├── seed.py                   # Idempotent Python development seed script
+│   ├── seed_data.sql             # Pure SQL development seed script
+│   ├── models/                   # SQLAlchemy 2.0 ORM Models
+│   ├── migrations/               # Alembic version control
+│   └── scripts/                  # DB management & test scripts
+├── backend/                      # FastAPI Backend (Dev 1)
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── core/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   ├── repositories/
+│   │   ├── services/
+│   │   └── api/
+│   └── tests/
+└── frontend/                     # React Frontend (Dev 2)
 ```
 
 ---

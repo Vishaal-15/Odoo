@@ -2,77 +2,416 @@
 
 **Document Owner**: Collaboration (Dev 1 Backend & Dev 3 Database)  
 **Base URL**: `/api/v1`  
-**Authentication**: HTTP Bearer JWT Token (`Authorization: Bearer <token>`)  
+**Authentication**: All authenticated endpoints require header `Authorization: Bearer <JWT_ACCESS_TOKEN>`  
 
 ---
 
-## 1. Authentication & Account APIs (Section 3.1)
+## Endpoint Summary
 
-| Method | Endpoint | Description | Access |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/auth/signup` | Register new user account (`employee_id`, `email`, `password`, `role`) | Public |
-| `POST` | `/auth/login` | Authenticate user with email & password, returns JWT token | Public |
-| `POST` | `/auth/verify-email` | Verify email address using token | Public |
-| `GET` | `/auth/me` | Fetch authenticated user profile & role | Authenticated |
-
----
-
-## 2. Employee Profile APIs (Section 3.3)
-
-| Method | Endpoint | Description | Access |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/employees` | List all employees (filterable by dept, status) | Admin / HR |
-| `GET` | `/employees/{id}` | Get detailed profile of specific employee | Admin / HR / Self |
-| `POST` | `/employees` | Onboard and create new employee profile | Admin / HR |
-| `PUT` | `/employees/{id}` | Full profile update (Admin) or limited update (Employee: phone, address, picture) | Admin / HR / Self |
-| `DELETE`| `/employees/{id}` | Deactivate employee profile | Admin |
-
----
-
-## 3. Attendance APIs (Section 3.4)
-
-| Method | Endpoint | Description | Access |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/attendance/check-in` | Record daily clock-in for authenticated employee | Employee |
-| `POST` | `/attendance/check-out` | Record clock-out and calculate daily work hours | Employee |
-| `GET` | `/attendance/my-records`| Get personal daily/weekly attendance history | Employee |
-| `GET` | `/attendance` | View attendance records across all employees | Admin / HR |
-| `PUT` | `/attendance/{id}` | Adjust/correct attendance status or work hours | Admin / HR |
+| Category | Method | Endpoint | Description | Access |
+| :--- | :--- | :--- | :--- | :--- |
+| **Auth** | `POST` | `/auth/register` | Register new user account | Public |
+| **Auth** | `POST` | `/auth/login` | Authenticate user, returns JWT access token | Public |
+| **Auth** | `GET` | `/auth/me` | Fetch authenticated user profile | Authenticated |
+| **Employees** | `GET` | `/employees` | List all employees (filterable by dept, status) | Admin / HR |
+| **Employees** | `GET` | `/employees/{id}` | Get detailed employee profile | Admin / HR / Self |
+| **Employees** | `POST` | `/employees` | Onboard and create new employee profile | Admin / HR |
+| **Employees** | `PUT` | `/employees/{id}` | Update profile (Admin: all, Employee: personal)| Admin / HR / Self |
+| **Attendance** | `POST` | `/attendance/check-in` | Record daily clock-in | Employee |
+| **Attendance** | `POST` | `/attendance/check-out`| Record daily clock-out | Employee |
+| **Attendance** | `GET` | `/attendance/me` | View personal daily/weekly attendance history | Employee |
+| **Attendance** | `GET` | `/attendance` | View attendance across all employees | Admin / HR |
+| **Leaves** | `GET` | `/leaves/types` | List available leave types | Authenticated |
+| **Leaves** | `POST` | `/leaves` | Apply for leave | Employee |
+| **Leaves** | `GET` | `/leaves/me` | View personal leave applications | Employee |
+| **Leaves** | `GET` | `/leaves` | View all leave applications | Admin / HR |
+| **Leaves** | `POST` | `/leaves/{id}/approve` | Approve leave request | Admin / HR |
+| **Leaves** | `POST` | `/leaves/{id}/reject` | Reject leave request | Admin / HR |
+| **Payroll** | `GET` | `/payroll/me` | View personal payslips (Read-only) | Employee |
+| **Payroll** | `GET` | `/payroll` | View payroll list across organization | Admin / HR |
+| **Payroll** | `POST` | `/payroll` | Create or process monthly payroll record | Admin / HR |
+| **Notifications** | `GET` | `/notifications` | Fetch user alerts & unread count | Authenticated |
+| **Notifications** | `PATCH` | `/notifications/{id}/read` | Mark notification as read | Authenticated |
+| **Analytics** | `GET` | `/analytics/overview` | Overall HR dashboard KPIs | Admin / HR |
+| **Analytics** | `GET` | `/analytics/attendance-trends` | Attendance & absenteeism trends | Admin / HR |
 
 ---
 
-## 4. Leave & Time-Off APIs (Section 3.5)
+---
 
-| Method | Endpoint | Description | Access |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/leaves/types` | List available leave types (Paid, Sick, Casual, Unpaid) | Authenticated |
-| `POST` | `/leaves/apply` | Submit new leave application | Employee |
-| `GET` | `/leaves/my-requests` | View personal leave requests & statuses | Employee |
-| `GET` | `/leaves/all` | View all submitted leave requests | Admin / HR |
-| `PUT` | `/leaves/{id}/approve` | Approve leave request with comments | Admin / HR |
-| `PUT` | `/leaves/{id}/reject` | Reject leave request with reason | Admin / HR |
+## 1. Authentication & User (`/auth`)
+
+### `POST /auth/register`
+- **Auth**: Public
+- **Request Body**:
+  ```json
+  {
+    "employee_id": "EMP1001",
+    "email": "alex@company.com",
+    "password": "SecurePassword123!",
+    "role": "EMPLOYEE", // Optional: "EMPLOYEE", "HR", "ADMIN" (default: EMPLOYEE)
+    "first_name": "Alex",
+    "last_name": "Morgan",
+    "department": "Engineering",
+    "designation": "Software Engineer",
+    "phone": "+1234567890"
+  }
+  ```
+- **Response**: `201 Created`
+  ```json
+  {
+    "id": 1,
+    "employee_id": "EMP1001",
+    "email": "alex@company.com",
+    "role": "EMPLOYEE",
+    "is_active": true,
+    "created_at": "2026-08-22T04:00:00Z",
+    "profile": {
+      "first_name": "Alex",
+      "last_name": "Morgan",
+      "department": "Engineering",
+      "designation": "Software Engineer",
+      "phone": "+1234567890",
+      "address": null,
+      "profile_picture_url": null,
+      "joining_date": "2026-08-22",
+      "basic_salary": 0.0
+    }
+  }
+  ```
+
+### `POST /auth/login`
+- **Auth**: Public
+- **Request Body**:
+  ```json
+  {
+    "email": "alex@company.com",
+    "password": "SecurePassword123!"
+  }
+  ```
+- **Response**: `200 OK`
+  ```json
+  {
+    "access_token": "eyJhbGciOi...",
+    "token_type": "bearer",
+    "user": {
+      "id": 1,
+      "employee_id": "EMP1001",
+      "email": "alex@company.com",
+      "role": "EMPLOYEE",
+      "first_name": "Alex",
+      "last_name": "Morgan",
+      "department": "Engineering"
+    }
+  }
+  ```
+
+### `GET /auth/me`
+- **Auth**: Authenticated (Any role)
+- **Response**: `200 OK` - Returns currently authenticated user with complete profile.
 
 ---
 
-## 5. Payroll APIs (Section 3.6)
+## 2. Employee Profile Management (`/employees`)
 
-| Method | Endpoint | Description | Access |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/payroll/my-payslips` | View personal historical payslips (Read-only) | Employee |
-| `GET` | `/payroll/all` | View payroll list across all employees | Admin / HR |
-| `POST` | `/payroll/generate` | Generate monthly payroll batch | Admin / HR |
-| `PUT` | `/payroll/{id}` | Update payroll draft / mark as PAID | Admin / HR |
-| `GET` | `/payroll/salary-structure/{employee_id}` | View salary breakdown for employee | Admin / HR / Self |
-| `PUT` | `/payroll/salary-structure/{employee_id}` | Update salary structure & allowances/deductions | Admin |
+### `GET /employees/me`
+- **Auth**: Authenticated (Employee)
+- **Response**: `200 OK` - Returns logged in employee's profile and job details.
+
+### `PATCH /employees/me`
+- **Auth**: Authenticated (Employee)
+- **Request Body** (Limited fields editable by employee):
+  ```json
+  {
+    "phone": "+1987654321",
+    "address": "456 Market St, San Francisco, CA",
+    "profile_picture_url": "https://example.com/avatar.jpg",
+    "emergency_contact": "+15554443333"
+  }
+  ```
+- **Response**: `200 OK` - Updated user profile.
+
+### `GET /employees`
+- **Auth**: `HR`, `ADMIN`
+- **Query Params**: `skip` (int, default 0), `limit` (int, default 50), `department` (string), `role` (string), `search` (string)
+- **Response**: `200 OK`
+  ```json
+  {
+    "total": 25,
+    "items": [ ... ]
+  }
+  ```
+
+### `GET /employees/{id}`
+- **Auth**: `HR`, `ADMIN` (or `EMPLOYEE` if requesting own ID)
+- **Response**: `200 OK` - Detailed employee profile.
+
+### `PATCH /employees/{id}`
+- **Auth**: `HR`, `ADMIN`
+- **Request Body**:
+  ```json
+  {
+    "first_name": "Alexander",
+    "department": "Senior Engineering",
+    "designation": "Staff Engineer",
+    "role": "HR",
+    "basic_salary": 95000.00,
+    "is_active": true
+  }
+  ```
+- **Response**: `200 OK` - Updated employee profile.
 
 ---
 
-## 6. Notifications & Analytics APIs (Section 6)
+## 3. Attendance Management (`/attendance`)
 
-| Method | Endpoint | Description | Access |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/notifications` | Fetch user notifications and unread count | Authenticated |
-| `PUT` | `/notifications/{id}/read`| Mark notification as read | Authenticated |
-| `GET` | `/analytics/overview` | Fetch company-wide HR analytics & KPI cards | Admin / HR |
-| `GET` | `/analytics/attendance-trends` | Fetch attendance & absenteeism rate trends | Admin / HR |
-| `GET` | `/analytics/payroll-distribution` | Fetch department payroll expenditure | Admin / HR |
+### `POST /attendance/check-in`
+- **Auth**: Authenticated (`EMPLOYEE`, `HR`, `ADMIN`)
+- **Request Body** (Optional):
+  ```json
+  {
+    "remarks": "Working from office"
+  }
+  ```
+- **Response**: `201 Created`
+  ```json
+  {
+    "id": 10,
+    "user_id": 1,
+    "date": "2026-08-22",
+    "check_in_time": "2026-08-22T09:00:00Z",
+    "check_out_time": null,
+    "total_hours": 0.0,
+    "status": "PRESENT",
+    "remarks": "Working from office"
+  }
+  ```
+- **Error Codes**: `400 Bad Request` if already checked in today.
+
+### `POST /attendance/check-out`
+- **Auth**: Authenticated (`EMPLOYEE`, `HR`, `ADMIN`)
+- **Request Body** (Optional):
+  ```json
+  {
+    "remarks": "Completed day tasks"
+  }
+  ```
+- **Response**: `200 OK`
+  ```json
+  {
+    "id": 10,
+    "user_id": 1,
+    "date": "2026-08-22",
+    "check_in_time": "2026-08-22T09:00:00Z",
+    "check_out_time": "2026-08-22T17:30:00Z",
+    "total_hours": 8.5,
+    "status": "PRESENT",
+    "remarks": "Completed day tasks"
+  }
+  ```
+
+### `GET /attendance/me`
+- **Auth**: Authenticated (`EMPLOYEE`, `HR`, `ADMIN`)
+- **Query Params**: `start_date` (date, YYYY-MM-DD), `end_date` (date, YYYY-MM-DD)
+- **Response**: `200 OK` - List of personal attendance records.
+
+### `GET /attendance/me/today`
+- **Auth**: Authenticated (`EMPLOYEE`, `HR`, `ADMIN`)
+- **Response**: `200 OK` - Today's check-in/out record or null.
+
+### `GET /attendance`
+- **Auth**: `HR`, `ADMIN`
+- **Query Params**: `user_id` (int), `date` (date), `start_date` (date), `end_date` (date), `status` (string), `skip`, `limit`
+- **Response**: `200 OK` - List of all employees' attendance records.
+
+### `GET /attendance/summary`
+- **Auth**: `HR`, `ADMIN`
+- **Query Params**: `date` (default: today)
+- **Response**: `200 OK`
+  ```json
+  {
+    "total_employees": 50,
+    "present_today": 42,
+    "absent_today": 5,
+    "on_leave_today": 3,
+    "checked_in_active": 12
+  }
+  ```
+
+---
+
+## 4. Leave & Time-Off Management (`/leaves`)
+
+### `POST /leaves`
+- **Auth**: Authenticated (`EMPLOYEE`, `HR`, `ADMIN`)
+- **Request Body**:
+  ```json
+  {
+    "leave_type": "PAID", // "PAID", "SICK", "UNPAID"
+    "start_date": "2026-08-25",
+    "end_date": "2026-08-27",
+    "reason": "Family vacation"
+  }
+  ```
+- **Response**: `201 Created`
+  ```json
+  {
+    "id": 5,
+    "user_id": 1,
+    "leave_type": "PAID",
+    "start_date": "2026-08-25",
+    "end_date": "2026-08-27",
+    "days_count": 3,
+    "reason": "Family vacation",
+    "status": "PENDING",
+    "reviewer_id": null,
+    "reviewer_comments": null,
+    "created_at": "2026-08-22T04:10:00Z"
+  }
+  ```
+
+### `GET /leaves/me`
+- **Auth**: Authenticated (`EMPLOYEE`, `HR`, `ADMIN`)
+- **Query Params**: `status` (PENDING, APPROVED, REJECTED)
+- **Response**: `200 OK` - Array of current user's leave requests.
+
+### `GET /leaves`
+- **Auth**: `HR`, `ADMIN`
+- **Query Params**: `status`, `user_id`, `skip`, `limit`
+- **Response**: `200 OK` - Array of all company leave requests.
+
+### `GET /leaves/{id}`
+- **Auth**: Authenticated (Self or `HR`/`ADMIN`)
+- **Response**: `200 OK` - Leave request details.
+
+### `PATCH /leaves/{id}/status`
+- **Auth**: `HR`, `ADMIN`
+- **Request Body**:
+  ```json
+  {
+    "status": "APPROVED", // "APPROVED" or "REJECTED"
+    "reviewer_comments": "Approved. Have a great vacation!"
+  }
+  ```
+- **Response**: `200 OK` - Updated leave request.
+
+### `DELETE /leaves/{id}`
+- **Auth**: Authenticated (Owner of pending leave)
+- **Response**: `204 No Content` - Cancels pending leave.
+
+---
+
+## 5. Payroll Management (`/payroll`)
+
+### `GET /payroll/me`
+- **Auth**: Authenticated (`EMPLOYEE`, `HR`, `ADMIN`)
+- **Query Params**: `year` (int)
+- **Response**: `200 OK` - Array of salary slips for current user.
+
+### `GET /payroll`
+- **Auth**: `HR`, `ADMIN`
+- **Query Params**: `month` (1-12), `year` (int), `payment_status`, `skip`, `limit`
+- **Response**: `200 OK` - Array of payroll records for all employees.
+
+### `POST /payroll`
+- **Auth**: `HR`, `ADMIN`
+- **Request Body**:
+  ```json
+  {
+    "user_id": 1,
+    "month": 8,
+    "year": 2026,
+    "basic_salary": 8000.00,
+    "allowances": 1200.00,
+    "deductions": 400.00,
+    "payment_status": "PROCESSED",
+    "payment_date": "2026-08-31",
+    "remarks": "August 2026 Salary"
+  }
+  ```
+- **Response**: `201 Created`
+  ```json
+  {
+    "id": 12,
+    "user_id": 1,
+    "month": 8,
+    "year": 2026,
+    "basic_salary": 8000.00,
+    "allowances": 1200.00,
+    "deductions": 400.00,
+    "net_salary": 8800.00,
+    "payment_status": "PROCESSED",
+    "payment_date": "2026-08-31",
+    "remarks": "August 2026 Salary"
+  }
+  ```
+
+### `GET /payroll/{id}`
+- **Auth**: Authenticated (Self or `HR`/`ADMIN`)
+- **Response**: `200 OK` - Detailed payroll slip.
+
+### `PATCH /payroll/{id}`
+- **Auth**: `HR`, `ADMIN`
+- **Request Body**: Partial update of payroll fields (basic_salary, allowances, deductions, payment_status, payment_date).
+- **Response**: `200 OK` - Updated payroll record.
+
+---
+
+## 6. Notifications (`/notifications`)
+
+### `GET /notifications`
+- **Auth**: Authenticated
+- **Query Params**: `unread_only` (bool, default false), `limit` (int, default 20)
+- **Response**: `200 OK`
+  ```json
+  {
+    "unread_count": 2,
+    "items": [
+      {
+        "id": 1,
+        "title": "Leave Approved",
+        "message": "Your leave request for 2026-08-25 has been approved.",
+        "type": "LEAVE",
+        "is_read": false,
+        "created_at": "2026-08-22T05:00:00Z"
+      }
+    ]
+  }
+  ```
+
+### `PATCH /notifications/{id}/read`
+- **Auth**: Authenticated (Recipient)
+- **Response**: `200 OK` - Marked notification as read.
+
+### `PATCH /notifications/read-all`
+- **Auth**: Authenticated
+- **Response**: `200 OK` - Marks all current user notifications as read.
+
+---
+
+## 7. Analytics & Reports Support (`/analytics`)
+
+### `GET /analytics/overview`
+- **Auth**: `HR`, `ADMIN`
+- **Response**: `200 OK`
+  ```json
+  {
+    "total_employees": 45,
+    "active_employees": 44,
+    "present_today": 38,
+    "absent_today": 4,
+    "on_leave_today": 2,
+    "pending_leave_requests": 6,
+    "monthly_payroll_total": 352000.00
+  }
+  ```
+
+### `GET /analytics/attendance-trends`
+- **Auth**: `HR`, `ADMIN`
+- **Query Params**: `days` (int, default 7)
+- **Response**: `200 OK` - Daily trend stats.
+
+### `GET /analytics/leave-breakdown`
+- **Auth**: `HR`, `ADMIN`
+- **Response**: `200 OK` - Count of leaves by type and status.
+>>>>>>> origin/main

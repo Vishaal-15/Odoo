@@ -1,4 +1,4 @@
-# Dayflow HRMS - Database Schema & Architecture
+# Dayflow HRMS - Database Schema & ER Design
 
 **Document Owner**: Developer 3 (Database + Infrastructure)  
 **Target Audience**: Developer 1 (Backend / FastAPI), Developer 2 (Frontend / UI), Developer 4 (AI / Analytics)  
@@ -235,7 +235,7 @@ Alerts, time-off notifications, and announcements. Supports Section 6 (Future En
 | `title` | `VARCHAR(255)` | `NOT NULL` | Alert headline |
 | `message` | `TEXT` | `NOT NULL` | Notification body |
 | `type` | `notification_type_enum`| `NOT NULL`, Default: `'INFO'` | `INFO`, `LEAVE_STATUS`, `ATTENDANCE_ALERT`, `PAYROLL_RELEASE`, `ANNOUNCEMENT` |
-| `is_read` | `BOOLEAN` | `NOT NULL`, Default: `false`, `INDEX` | Read status |
+| `is_read` | `BOOLEAN` | `NOT NULL`, Default: `false`, `INDEX` | Read indicator |
 | `link` | `VARCHAR(255)` | `NULLABLE` | Front-end route link |
 | `created_at` | `TIMESTAMPTZ` | `NOT NULL`, Default: `now()`, `INDEX` | Alert creation timestamp |
 
@@ -257,75 +257,3 @@ Security, administrative, and financial event log. Supports Section 6 and Develo
 | `details` | `JSON` | `NULLABLE` | Payload diff or request metadata |
 | `ip_address` | `VARCHAR(45)` | `NULLABLE` | Client IP address |
 | `created_at` | `TIMESTAMPTZ` | `NOT NULL`, Default: `now()`, `INDEX` | Timestamp of event |
-
----
-
-## 4. Developer 1 (Backend & FastAPI) Coordination Guide
-
-### 4.1 Importing Models & Database Sessions
-Developer 1 can import all models directly from `database.models` and session dependencies from `database.connection`:
-
-```python
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-
-# Import database session dependency
-from database.connection import get_db
-
-# Import models and enums
-from database.models import (
-    User,
-    Employee,
-    Department,
-    Attendance,
-    LeaveRequest,
-    Payroll,
-    UserRole,
-    AttendanceStatus,
-    LeaveStatus,
-)
-
-router = APIRouter(prefix="/employees", tags=["Employees"])
-
-@router.get("/")
-def list_employees(db: Session = Depends(get_db)):
-    return db.query(Employee).filter(Employee.status == "ACTIVE").all()
-```
-
----
-
-## 5. Developer 4 (AI & Analytics) Aggregation Queries
-
-The schema has been indexed and structured to support high-performance analytical queries:
-
-### 5.1 Attendance Trend & Rate per Department
-```sql
-SELECT 
-    d.name AS department,
-    a.date,
-    COUNT(CASE WHEN a.status = 'PRESENT' THEN 1 END) AS present_count,
-    COUNT(CASE WHEN a.status = 'ABSENT' THEN 1 END) AS absent_count,
-    ROUND(AVG(a.work_hours), 2) AS avg_work_hours
-FROM attendance a
-JOIN employees e ON a.employee_id = e.id
-JOIN departments d ON e.department_id = d.id
-WHERE a.date >= CURRENT_DATE - INTERVAL '30 days'
-GROUP BY d.name, a.date
-ORDER BY a.date DESC;
-```
-
-### 5.2 Monthly Total Payroll Spend by Department
-```sql
-SELECT 
-    d.name AS department,
-    p.year,
-    p.month,
-    SUM(p.net_salary) AS total_payroll_paid,
-    COUNT(p.id) AS employees_paid
-FROM payrolls p
-JOIN employees e ON p.employee_id = e.id
-JOIN departments d ON e.department_id = d.id
-WHERE p.payment_status = 'PAID'
-GROUP BY d.name, p.year, p.month
-ORDER BY p.year DESC, p.month DESC;
-```

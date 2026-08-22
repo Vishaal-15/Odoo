@@ -1,14 +1,14 @@
 # Dayflow HRMS - System Architecture & Infrastructure
 
-**Document Owner**: Developer 3 (Database + Infrastructure)  
+**Document Owner**: Collaboration (Dev 1 Backend & Dev 3 Database)  
 **Project**: Dayflow Human Resource Management System  
 **Branch Strategy**: Collaborative single-branch (`main`) workflow  
 
 ---
 
-## 1. System Overview
+## 1. High-Level System Architecture
 
-Dayflow HRMS is an enterprise-grade Human Resource Management System built on a modular four-tier architecture. The system enables seamless employee onboarding, profile management, daily/weekly attendance tracking, leave request approval workflows, automated payroll computations, and intelligent analytics.
+Dayflow HRMS uses a layered modular monolith architecture designed for clean separation of concerns, high testability, and seamless multi-developer collaboration.
 
 ```mermaid
 graph TD
@@ -49,15 +49,42 @@ graph TD
 
 ---
 
-## 3. Infrastructure & Docker Setup
+## 3. Backend Layer Breakdown
 
-### 3.1 Container Architecture
+### A. API Layer (`backend/app/api/`)
+- Handles incoming HTTP requests and serialization.
+- Declares input and output validation via Pydantic schemas.
+- Injects dependencies (database sessions, authenticated user context, RBAC validation).
+
+### B. RBAC & Security Layer (`backend/app/api/deps.py`, `backend/app/core/security.py`)
+- Passwords stored with cryptographic salts via `bcrypt`.
+- Stateless JWT (JSON Web Tokens) encoded with HS256 algorithm.
+- RBAC guards ensure non-admin users cannot access administrative data or mutate other users' records.
+
+### C. Service Layer (`backend/app/services/`)
+- Contains all enterprise business rules:
+  - Validating leave dates, avoiding overlapping leaves.
+  - Enforcing check-in before check-out, calculating worked hours, preventing multiple daily check-ins.
+  - Dispatching internal notifications upon workflow events (leave submission, approval/rejection).
+
+### D. Repository Layer (`backend/app/repositories/`)
+- Encapsulates database queries and transactions.
+- Provides consistent methods (`get_by_id`, `list`, `create`, `update`, `delete`).
+
+### E. Model Layer (`database/models/` & `backend/app/models/`)
+- SQLAlchemy declarative Base classes with column types, relationships, foreign keys, and indexes.
+
+---
+
+## 4. Infrastructure & Docker Setup
+
+### 4.1 Container Architecture
 - **PostgreSQL 16 Alpine**: Isolated containerized database server. No host installation of PostgreSQL is required on any developer laptop.
 - **Healthcheck Enabled**: The container verifies readiness using `pg_isready` before accepting traffic.
 - **Docker Compose Networking**: Shared bridge network `dayflow_network` connects all containerized services.
 - **Persistent Volume**: `dayflow_postgres_data` persists data across container restarts.
 
-### 3.2 Database Connection Details
+### 4.2 Database Connection Details
 - **Container Host**: `postgres` (inside docker network) or `localhost` (from host machine)
 - **Port**: `5432`
 - **Default Database**: `dayflow_db`
@@ -66,15 +93,15 @@ graph TD
 
 ---
 
-## 4. Database Lifecycle & Migrations (Alembic)
+## 5. Database Lifecycle & Migrations (Alembic)
 
 1. **Version Controlled DDL**: All schema modifications are recorded in `database/migrations/versions/`.
-2. **Deterministic Upgrades**: Any developer or staging environment runs `alembic upgrade head` to reach the exact target schema state.
+2. **Deterministic Upgrades**: Any developer or staging environment runs `python -m alembic upgrade head` to reach the exact target schema state.
 3. **Idempotent Seeding**: `database/seed.py` provides pre-seeded departments, HR/Admin accounts, sample employees, attendance history, leave requests, and payrolls for rapid development and testing.
 
 ---
 
-## 5. Security & Secret Management
+## 6. Security & Secret Management
 
 - Credentials and sensitive configurations are stored exclusively in `.env`.
 - `.env.example` serves as the single source of truth for environment variable templates.
