@@ -65,14 +65,14 @@ pytest backend/tests -v
 
 The database comes pre-seeded with realistic test accounts:
 
-| Email | Password | Role | Designation |
+| Email | Password | Role | Employee Name & Designation |
 | :--- | :--- | :--- | :--- |
-| `admin@dayflow.com` | `Admin@123` | `ADMIN` | Chief Technology Officer / Administrator |
-| `hr@dayflow.com` | `Hr@123` | `HR` | Lead HR Officer |
-| `alex.morgan@dayflow.com` | `Employee@123` | `EMPLOYEE` | Senior Full-Stack Engineer |
-| `david.kim@dayflow.com` | `Employee@123` | `EMPLOYEE` | Product UI/UX Designer |
-| `emily.watson@dayflow.com` | `Employee@123` | `EMPLOYEE` | Senior Marketing Strategist |
-| `james.miller@dayflow.com` | `Employee@123` | `EMPLOYEE` | Lead Financial Analyst |
+| `admin@dayflow.com` | `Admin@123` | `ADMIN` | **Senthil** (Chief Technology Officer / Administrator) |
+| `hr@dayflow.com` | `Hr@123` | `HR` | **Kanagaraj** (Lead HR Officer) |
+| `vishaal@dayflow.com` | `Employee@123` | `EMPLOYEE` | **Vishaal** (Senior Full-Stack Engineer) |
+| `saaral@dayflow.com` | `Employee@123` | `EMPLOYEE` | **Saaral** (Product UI/UX Designer) |
+| `sharan@dayflow.com` | `Employee@123` | `EMPLOYEE` | **Sharan** (Senior Marketing Strategist) |
+| `sreevanth@dayflow.com` | `Employee@123` | `EMPLOYEE` | **Sreevanth** (Lead Financial Analyst) |
 
 ---
 

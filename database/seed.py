@@ -2,9 +2,11 @@
 Dayflow HRMS - Development Database Seed Script
 Developer 3: Database + Infrastructure
 
-Creates realistic development seed data for all entities:
-- Departments (Engineering, Human Resources, Sales & Marketing, Finance)
-- Users & Employees (Admin, HR Officer, Regular Employees)
+Creates realistic development seed data with requested employee profiles for all entities:
+- Admin: Senthil (CTO / Administrator)
+- HR: Kanagaraj (Lead HR Officer)
+- Employees: Vishaal, Saaral, Sharan, Sreevanth
+- Departments (Engineering & Technology, Human Resources, Sales & Marketing, Finance & Operations)
 - Leave Types (Paid, Sick, Casual, Unpaid)
 - Salary Structures & Payroll History
 - Attendance Records (Multi-day logs with check-in/out, hours & statuses)
@@ -55,7 +57,7 @@ def hash_password(plain_password: str) -> str:
 
 
 def seed_database():
-    """Seeds the database with comprehensive development data."""
+    """Seeds the database with comprehensive development data using team employee names."""
     db = SessionLocal()
     print("[Dayflow Seed] Starting database seeding...")
 
@@ -101,7 +103,7 @@ def seed_database():
         print(f"  [+] Seeded {len(dept_data)} Departments")
 
         # ----------------------------------------------------------------------
-        # 3. Seed Users and Employee Profiles
+        # 3. Seed Users and Employee Profiles (Senthil, Kanagaraj, Vishaal, Saaral, Sharan, Sreevanth)
         # ----------------------------------------------------------------------
         # Precomputed standard passwords:
         # Admin: Admin@123
@@ -116,98 +118,98 @@ def seed_database():
                 "user": {"email": "admin@dayflow.com", "password_hash": admin_pwd, "role": UserRole.ADMIN, "is_verified": True, "is_active": True},
                 "employee": {
                     "employee_code": "EMP001",
-                    "first_name": "Sarah",
-                    "last_name": "Connor",
+                    "first_name": "Senthil",
+                    "last_name": "Kumar",
                     "email": "admin@dayflow.com",
-                    "phone": "+1-555-0101",
-                    "date_of_birth": date(1988, 5, 12),
-                    "gender": "Female",
-                    "address": "742 Evergreen Terrace, Springfield, OR",
-                    "profile_picture_url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400",
+                    "phone": "+91-98765-43210",
+                    "date_of_birth": date(1985, 5, 12),
+                    "gender": "Male",
+                    "address": "B-402, Prestige Tech Park, Marathahalli, Bengaluru, Karnataka 560103",
+                    "profile_picture_url": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
                     "dept_code": "ENG",
                     "designation": "Chief Technology Officer / Administrator",
                     "employment_type": EmploymentType.FULL_TIME,
                     "joining_date": date(2022, 1, 15),
                     "status": EmployeeStatus.ACTIVE,
-                    "documents": {"resume": "docs/sarah_resume.pdf", "id_proof": "docs/sarah_passport.pdf"},
+                    "documents": {"resume": "docs/senthil_resume.pdf", "id_proof": "docs/senthil_aadhaar.pdf"},
                 },
-                "salary": {"base": Decimal("120000.00"), "hra": Decimal("30000.00"), "transport": Decimal("5000.00"), "medical": Decimal("3000.00"), "tax": Decimal("22000.00"), "pf": Decimal("7200.00"), "insurance": Decimal("1800.00")}
+                "salary": {"base": Decimal("150000.00"), "hra": Decimal("40000.00"), "transport": Decimal("8000.00"), "medical": Decimal("5000.00"), "tax": Decimal("28000.00"), "pf": Decimal("9000.00"), "insurance": Decimal("2500.00")}
             },
             {
                 "user": {"email": "hr@dayflow.com", "password_hash": hr_pwd, "role": UserRole.HR, "is_verified": True, "is_active": True},
                 "employee": {
                     "employee_code": "EMP002",
-                    "first_name": "Rachel",
-                    "last_name": "Green",
+                    "first_name": "Kanagaraj",
+                    "last_name": "R",
                     "email": "hr@dayflow.com",
-                    "phone": "+1-555-0102",
-                    "date_of_birth": date(1991, 8, 24),
-                    "gender": "Female",
-                    "address": "495 Grove Street, New York, NY",
-                    "profile_picture_url": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400",
+                    "phone": "+91-98765-43211",
+                    "date_of_birth": date(1989, 8, 24),
+                    "gender": "Male",
+                    "address": "Flat 1204, Hiranandani Gardens, Powai, Mumbai, Maharashtra 400076",
+                    "profile_picture_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
                     "dept_code": "HR",
                     "designation": "Lead HR Officer",
                     "employment_type": EmploymentType.FULL_TIME,
                     "joining_date": date(2022, 3, 1),
                     "status": EmployeeStatus.ACTIVE,
-                    "documents": {"resume": "docs/rachel_resume.pdf", "id_proof": "docs/rachel_id.pdf"},
+                    "documents": {"resume": "docs/kanagaraj_resume.pdf", "id_proof": "docs/kanagaraj_pan.pdf"},
                 },
-                "salary": {"base": Decimal("85000.00"), "hra": Decimal("20000.00"), "transport": Decimal("4000.00"), "medical": Decimal("2500.00"), "tax": Decimal("14000.00"), "pf": Decimal("5100.00"), "insurance": Decimal("1400.00")}
+                "salary": {"base": Decimal("95000.00"), "hra": Decimal("25000.00"), "transport": Decimal("5000.00"), "medical": Decimal("3000.00"), "tax": Decimal("16000.00"), "pf": Decimal("5700.00"), "insurance": Decimal("1800.00")}
             },
             {
-                "user": {"email": "alex.morgan@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
+                "user": {"email": "vishaal@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
                 "employee": {
                     "employee_code": "EMP003",
-                    "first_name": "Alex",
-                    "last_name": "Morgan",
-                    "email": "alex.morgan@dayflow.com",
-                    "phone": "+1-555-0103",
-                    "date_of_birth": date(1994, 3, 19),
-                    "gender": "Non-Binary",
-                    "address": "120 Main Street, Seattle, WA",
+                    "first_name": "Vishaal",
+                    "last_name": "S",
+                    "email": "vishaal@dayflow.com",
+                    "phone": "+91-98765-43212",
+                    "date_of_birth": date(1998, 3, 19),
+                    "gender": "Male",
+                    "address": "45/A, Financial District, Gachibowli, Hyderabad, Telangana 500032",
                     "profile_picture_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400",
                     "dept_code": "ENG",
                     "designation": "Senior Full-Stack Engineer",
                     "employment_type": EmploymentType.FULL_TIME,
                     "joining_date": date(2023, 2, 10),
                     "status": EmployeeStatus.ACTIVE,
-                    "documents": {"resume": "docs/alex_resume.pdf"},
+                    "documents": {"resume": "docs/vishaal_resume.pdf"},
                 },
-                "salary": {"base": Decimal("95000.00"), "hra": Decimal("22000.00"), "transport": Decimal("4500.00"), "medical": Decimal("2500.00"), "tax": Decimal("16000.00"), "pf": Decimal("5700.00"), "insurance": Decimal("1500.00")}
+                "salary": {"base": Decimal("110000.00"), "hra": Decimal("28000.00"), "transport": Decimal("6000.00"), "medical": Decimal("3500.00"), "tax": Decimal("19000.00"), "pf": Decimal("6600.00"), "insurance": Decimal("2000.00")}
             },
             {
-                "user": {"email": "david.kim@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
+                "user": {"email": "saaral@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
                 "employee": {
                     "employee_code": "EMP004",
-                    "first_name": "David",
-                    "last_name": "Kim",
-                    "email": "david.kim@dayflow.com",
-                    "phone": "+1-555-0104",
-                    "date_of_birth": date(1996, 11, 5),
-                    "gender": "Male",
-                    "address": "88 Market St, San Francisco, CA",
-                    "profile_picture_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+                    "first_name": "Saaral",
+                    "last_name": "Varunie",
+                    "email": "saaral@dayflow.com",
+                    "phone": "+91-98765-43213",
+                    "date_of_birth": date(1999, 11, 5),
+                    "gender": "Female",
+                    "address": "88, North Main Road, Koregaon Park, Pune, Maharashtra 411001",
+                    "profile_picture_url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400",
                     "dept_code": "ENG",
                     "designation": "Product UI/UX Designer",
                     "employment_type": EmploymentType.FULL_TIME,
                     "joining_date": date(2023, 6, 15),
                     "status": EmployeeStatus.ACTIVE,
-                    "documents": {"portfolio": "https://davidkim.design"},
+                    "documents": {"portfolio": "https://saaral.design"},
                 },
-                "salary": {"base": Decimal("80000.00"), "hra": Decimal("18000.00"), "transport": Decimal("3500.00"), "medical": Decimal("2000.00"), "tax": Decimal("12500.00"), "pf": Decimal("4800.00"), "insurance": Decimal("1200.00")}
+                "salary": {"base": Decimal("85000.00"), "hra": Decimal("22000.00"), "transport": Decimal("4500.00"), "medical": Decimal("2500.00"), "tax": Decimal("13500.00"), "pf": Decimal("5100.00"), "insurance": Decimal("1500.00")}
             },
             {
-                "user": {"email": "emily.watson@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
+                "user": {"email": "sharan@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
                 "employee": {
                     "employee_code": "EMP005",
-                    "first_name": "Emily",
-                    "last_name": "Watson",
-                    "email": "emily.watson@dayflow.com",
-                    "phone": "+1-555-0105",
-                    "date_of_birth": date(1992, 7, 30),
-                    "gender": "Female",
-                    "address": "34 Beacon Street, Boston, MA",
-                    "profile_picture_url": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
+                    "first_name": "Sharan",
+                    "last_name": "Kumar",
+                    "email": "sharan@dayflow.com",
+                    "phone": "+91-98765-43214",
+                    "date_of_birth": date(1997, 7, 30),
+                    "gender": "Male",
+                    "address": "23, 2nd Avenue, Anna Nagar West, Chennai, Tamil Nadu 600040",
+                    "profile_picture_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
                     "dept_code": "MKT",
                     "designation": "Senior Marketing Strategist",
                     "employment_type": EmploymentType.FULL_TIME,
@@ -215,20 +217,20 @@ def seed_database():
                     "status": EmployeeStatus.ACTIVE,
                     "documents": {},
                 },
-                "salary": {"base": Decimal("75000.00"), "hra": Decimal("17000.00"), "transport": Decimal("3500.00"), "medical": Decimal("2000.00"), "tax": Decimal("11500.00"), "pf": Decimal("4500.00"), "insurance": Decimal("1200.00")}
+                "salary": {"base": Decimal("80000.00"), "hra": Decimal("20000.00"), "transport": Decimal("4000.00"), "medical": Decimal("2500.00"), "tax": Decimal("12500.00"), "pf": Decimal("4800.00"), "insurance": Decimal("1400.00")}
             },
             {
-                "user": {"email": "james.miller@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
+                "user": {"email": "sreevanth@dayflow.com", "password_hash": emp_pwd, "role": UserRole.EMPLOYEE, "is_verified": True, "is_active": True},
                 "employee": {
                     "employee_code": "EMP006",
-                    "first_name": "James",
-                    "last_name": "Miller",
-                    "email": "james.miller@dayflow.com",
-                    "phone": "+1-555-0106",
-                    "date_of_birth": date(1989, 12, 14),
+                    "first_name": "Sreevanth",
+                    "last_name": "R",
+                    "email": "sreevanth@dayflow.com",
+                    "phone": "+91-98765-43215",
+                    "date_of_birth": date(1996, 12, 14),
                     "gender": "Male",
-                    "address": "150 North Michigan Ave, Chicago, IL",
-                    "profile_picture_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+                    "address": "704, DLF Horizon, Sector 54, Golf Course Road, Gurugram, Haryana 122002",
+                    "profile_picture_url": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
                     "dept_code": "FIN",
                     "designation": "Lead Financial Analyst",
                     "employment_type": EmploymentType.FULL_TIME,
@@ -236,7 +238,7 @@ def seed_database():
                     "status": EmployeeStatus.ACTIVE,
                     "documents": {},
                 },
-                "salary": {"base": Decimal("88000.00"), "hra": Decimal("20000.00"), "transport": Decimal("4000.00"), "medical": Decimal("2500.00"), "tax": Decimal("14500.00"), "pf": Decimal("5280.00"), "insurance": Decimal("1320.00")}
+                "salary": {"base": Decimal("98000.00"), "hra": Decimal("25000.00"), "transport": Decimal("5000.00"), "medical": Decimal("3000.00"), "tax": Decimal("16500.00"), "pf": Decimal("5880.00"), "insurance": Decimal("1620.00")}
             },
         ]
 
@@ -258,6 +260,12 @@ def seed_database():
                     is_active=u_info["is_active"],
                 )
                 db.add(user)
+                db.flush()
+            else:
+                user.password_hash = u_info["password_hash"]
+                user.role = u_info["role"]
+                user.is_verified = u_info["is_verified"]
+                user.is_active = u_info["is_active"]
                 db.flush()
             user_objects.append(user)
 
@@ -282,6 +290,15 @@ def seed_database():
                     documents=e_info["documents"],
                 )
                 db.add(emp)
+                db.flush()
+            else:
+                emp.user_id = user.id
+                emp.first_name = e_info["first_name"]
+                emp.last_name = e_info["last_name"]
+                emp.email = e_info["email"]
+                emp.phone = e_info["phone"]
+                emp.address = e_info["address"]
+                emp.designation = e_info["designation"]
                 db.flush()
             employee_objects.append(emp)
 
@@ -311,16 +328,21 @@ def seed_database():
                     effective_from=emp.joining_date,
                 )
                 db.add(sal_struct)
+            else:
+                sal_struct.base_salary = s_info["base"]
+                sal_struct.allowances = total_allowances
+                sal_struct.deductions = total_deductions
+                sal_struct.net_salary = net
 
         print(f"  [+] Seeded {len(employee_objects)} Users, Employees & Salary Structures")
 
         # ----------------------------------------------------------------------
         # 4. Update Department Managers
         # ----------------------------------------------------------------------
-        dept_map["ENG"].manager_id = employee_objects[0].id  # Sarah Connor (CTO)
-        dept_map["HR"].manager_id = employee_objects[1].id   # Rachel Green (HR Lead)
-        dept_map["MKT"].manager_id = employee_objects[4].id  # Emily Watson (Marketing)
-        dept_map["FIN"].manager_id = employee_objects[5].id  # James Miller (Finance)
+        dept_map["ENG"].manager_id = employee_objects[0].id  # Senthil (CTO / Admin)
+        dept_map["HR"].manager_id = employee_objects[1].id   # Kanagaraj (Lead HR Officer)
+        dept_map["MKT"].manager_id = employee_objects[4].id  # Sharan (Marketing)
+        dept_map["FIN"].manager_id = employee_objects[5].id  # Sreevanth (Finance)
         db.flush()
         print("  [+] Assigned Department Managers")
 
@@ -388,51 +410,51 @@ def seed_database():
 
         leave_requests_spec = [
             {
-                "employee_id": employee_objects[2].id,  # Alex Morgan
+                "employee_id": employee_objects[2].id,  # Vishaal
                 "leave_type_code": "PAID",
                 "start_date": today + timedelta(days=10),
                 "end_date": today + timedelta(days=14),
                 "days_count": Decimal("5.0"),
-                "reason": "Family vacation and annual travel.",
+                "reason": "Annual vacation and personal travel.",
                 "status": LeaveStatus.PENDING,
                 "reviewed_by": None,
                 "review_comments": None,
                 "reviewed_at": None,
             },
             {
-                "employee_id": employee_objects[3].id,  # David Kim
+                "employee_id": employee_objects[3].id,  # Saaral
                 "leave_type_code": "SICK",
                 "start_date": today - timedelta(days=3),
                 "end_date": today - timedelta(days=3),
                 "days_count": Decimal("1.0"),
-                "reason": "Fever and flu symptoms.",
+                "reason": "Viral fever and doctor consultation.",
                 "status": LeaveStatus.APPROVED,
                 "reviewed_by": hr_user.id,
-                "review_comments": "Approved. Rest well and get better soon.",
+                "review_comments": "Approved. Please take rest and get well soon.",
                 "reviewed_at": datetime.now() - timedelta(days=3),
             },
             {
-                "employee_id": employee_objects[4].id,  # Emily Watson
+                "employee_id": employee_objects[4].id,  # Sharan
                 "leave_type_code": "CASUAL",
                 "start_date": today - timedelta(days=15),
                 "end_date": today - timedelta(days=14),
                 "days_count": Decimal("2.0"),
-                "reason": "Personal errands and home relocation.",
+                "reason": "Personal family ceremony.",
                 "status": LeaveStatus.APPROVED,
                 "reviewed_by": hr_user.id,
                 "review_comments": "Approved by HR.",
                 "reviewed_at": datetime.now() - timedelta(days=16),
             },
             {
-                "employee_id": employee_objects[5].id,  # James Miller
+                "employee_id": employee_objects[5].id,  # Sreevanth
                 "leave_type_code": "UNPAID",
                 "start_date": today + timedelta(days=25),
                 "end_date": today + timedelta(days=35),
                 "days_count": Decimal("10.0"),
-                "reason": "Extended personal certification bootcamp.",
+                "reason": "Executive leadership certification program.",
                 "status": LeaveStatus.REJECTED,
                 "reviewed_by": admin_user.id,
-                "review_comments": "Cannot approve 10-day leave during quarterly financial close audit.",
+                "review_comments": "Cannot approve 10-day leave during Q4 statutory audit.",
                 "reviewed_at": datetime.now() - timedelta(days=1),
             },
         ]
@@ -514,23 +536,23 @@ def seed_database():
         # ----------------------------------------------------------------------
         notifications_data = [
             {
-                "user_id": user_objects[0].id,  # Admin
-                "title": "Monthly System Audit Completed",
+                "user_id": user_objects[0].id,  # Senthil (Admin)
+                "title": "Quarterly Security Audit Completed",
                 "message": "Security compliance and audit logs for the current quarter have been synchronized.",
                 "type": NotificationType.ANNOUNCEMENT,
                 "is_read": True,
                 "link": "/admin/audit",
             },
             {
-                "user_id": user_objects[1].id,  # HR
+                "user_id": user_objects[1].id,  # Kanagaraj (HR)
                 "title": "New Leave Request Awaiting Review",
-                "message": "Alex Morgan submitted a Paid Leave application for 5 days.",
+                "message": "Vishaal submitted a Paid Leave application for 5 days.",
                 "type": NotificationType.LEAVE_STATUS,
                 "is_read": False,
                 "link": "/hr/leave-requests",
             },
             {
-                "user_id": user_objects[2].id,  # Alex Morgan
+                "user_id": user_objects[2].id,  # Vishaal
                 "title": "Welcome to Dayflow HRMS",
                 "message": "Your profile has been fully configured. You can view attendance, salary slips, and apply for leaves.",
                 "type": NotificationType.INFO,
@@ -538,7 +560,7 @@ def seed_database():
                 "link": "/profile",
             },
             {
-                "user_id": user_objects[3].id,  # David Kim
+                "user_id": user_objects[3].id,  # Saaral
                 "title": "Leave Request Approved",
                 "message": "Your Sick Leave request for 1 day has been approved by HR.",
                 "type": NotificationType.LEAVE_STATUS,
@@ -546,8 +568,8 @@ def seed_database():
                 "link": "/leaves",
             },
             {
-                "user_id": user_objects[2].id,  # Alex Morgan
-                "title": "Payslip Released",
+                "user_id": user_objects[2].id,  # Vishaal
+                "title": "Monthly Payslip Released",
                 "message": "Your monthly salary payslip has been generated and is ready for download.",
                 "type": NotificationType.PAYROLL_RELEASE,
                 "is_read": False,
@@ -583,7 +605,7 @@ def seed_database():
                 "action": "CREATE_EMPLOYEE",
                 "entity_name": "employees",
                 "entity_id": "EMP001",
-                "details": {"first_name": "Sarah", "last_name": "Connor", "role": "ADMIN"},
+                "details": {"first_name": "Senthil", "last_name": "Kumar", "role": "ADMIN"},
                 "ip_address": "127.0.0.1",
             },
             {
@@ -622,14 +644,16 @@ def seed_database():
         print("[Dayflow Seed] Database seeding completed successfully!")
         print("==================================================================")
         print("Development Test Credentials:")
-        print("+--------------------------+----------------+--------------+")
-        print("| Email                    | Password       | Role         |")
-        print("+--------------------------+----------------+--------------+")
-        print("| admin@dayflow.com        | Admin@123      | ADMIN        |")
-        print("| hr@dayflow.com           | Hr@123         | HR           |")
-        print("| alex.morgan@dayflow.com  | Employee@123   | EMPLOYEE     |")
-        print("| david.kim@dayflow.com    | Employee@123   | EMPLOYEE     |")
-        print("+--------------------------+----------------+--------------+\n")
+        print("+----------------------------+----------------+--------------+")
+        print("| Email                      | Password       | Role         |")
+        print("+----------------------------+----------------+--------------+")
+        print("| admin@dayflow.com          | Admin@123      | ADMIN        |")
+        print("| hr@dayflow.com             | Hr@123         | HR           |")
+        print("| vishaal@dayflow.com        | Employee@123   | EMPLOYEE     |")
+        print("| saaral@dayflow.com         | Employee@123   | EMPLOYEE     |")
+        print("| sharan@dayflow.com         | Employee@123   | EMPLOYEE     |")
+        print("| sreevanth@dayflow.com      | Employee@123   | EMPLOYEE     |")
+        print("+----------------------------+----------------+--------------+\n")
 
     except Exception as e:
         db.rollback()

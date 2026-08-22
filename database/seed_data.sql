@@ -30,31 +30,31 @@ INSERT INTO users (email, password_hash, role, is_verified, is_active, created_a
 VALUES
   ('admin@dayflow.com', '$2b$12$2w/xE4RVu1jsL38EL2fBXOO83d3qlwfvIZ7SiXoRZAvtRNnKEPIWa', 'ADMIN', true, true, NOW(), NOW()),
   ('hr@dayflow.com', '$2b$12$2w/xE4RVu1jsL38EL2fBXOO83d3qlwfvIZ7SiXoRZAvtRNnKEPIWa', 'HR', true, true, NOW(), NOW()),
-  ('alex.morgan@dayflow.com', '$2b$12$2w/xE4RVu1jsL38EL2fBXOO83d3qlwfvIZ7SiXoRZAvtRNnKEPIWa', 'EMPLOYEE', true, true, NOW(), NOW()),
-  ('david.kim@dayflow.com', '$2b$12$2w/xE4RVu1jsL38EL2fBXOO83d3qlwfvIZ7SiXoRZAvtRNnKEPIWa', 'EMPLOYEE', true, true, NOW(), NOW()),
-  ('emily.watson@dayflow.com', '$2b$12$2w/xE4RVu1jsL38EL2fBXOO83d3qlwfvIZ7SiXoRZAvtRNnKEPIWa', 'EMPLOYEE', true, true, NOW(), NOW()),
-  ('james.miller@dayflow.com', '$2b$12$2w/xE4RVu1jsL38EL2fBXOO83d3qlwfvIZ7SiXoRZAvtRNnKEPIWa', 'EMPLOYEE', true, true, NOW(), NOW())
+  ('vishaal@dayflow.com', '$2b$12$2w/xE4RVu1jsL38EL2fBXOO83d3qlwfvIZ7SiXoRZAvtRNnKEPIWa', 'EMPLOYEE', true, true, NOW(), NOW()),
+  ('saaral@dayflow.com', '$2b$12$2w/xE4RVu1jsL38EL2fBXOO83d3qlwfvIZ7SiXoRZAvtRNnKEPIWa', 'EMPLOYEE', true, true, NOW(), NOW()),
+  ('sharan@dayflow.com', '$2b$12$2w/xE4RVu1jsL38EL2fBXOO83d3qlwfvIZ7SiXoRZAvtRNnKEPIWa', 'EMPLOYEE', true, true, NOW(), NOW()),
+  ('sreevanth@dayflow.com', '$2b$12$2w/xE4RVu1jsL38EL2fBXOO83d3qlwfvIZ7SiXoRZAvtRNnKEPIWa', 'EMPLOYEE', true, true, NOW(), NOW())
 ON CONFLICT (email) DO NOTHING;
 
 -- 4. Seed Employees
 INSERT INTO employees (user_id, employee_code, first_name, last_name, email, phone, date_of_birth, gender, address, profile_picture_url, department_id, designation, employment_type, joining_date, status, documents, created_at, updated_at)
-SELECT u.id, 'EMP001', 'Sarah', 'Connor', 'admin@dayflow.com', '+1-555-0101', '1988-05-12', 'Female', '742 Evergreen Terrace, Springfield, OR', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400', d.id, 'Chief Technology Officer / Administrator', 'FULL_TIME', '2022-01-15', 'ACTIVE', '{}', NOW(), NOW()
+SELECT u.id, 'EMP001', 'Senthil', 'Kumar', 'admin@dayflow.com', '+91-98765-43210', '1985-05-12', 'Male', 'B-402, Prestige Tech Park, Marathahalli, Bengaluru, Karnataka', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400', d.id, 'Chief Technology Officer / Administrator', 'FULL_TIME', '2022-01-15', 'ACTIVE', '{}', NOW(), NOW()
 FROM users u, departments d WHERE u.email = 'admin@dayflow.com' AND d.code = 'ENG'
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO employees (user_id, employee_code, first_name, last_name, email, phone, date_of_birth, gender, address, profile_picture_url, department_id, designation, employment_type, joining_date, status, documents, created_at, updated_at)
-SELECT u.id, 'EMP002', 'Rachel', 'Green', 'hr@dayflow.com', '+1-555-0102', '1991-08-24', 'Female', '495 Grove Street, New York, NY', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400', d.id, 'Lead HR Officer', 'FULL_TIME', '2022-03-01', 'ACTIVE', '{}', NOW(), NOW()
+SELECT u.id, 'EMP002', 'Kanagaraj', 'R', 'hr@dayflow.com', '+91-98765-43211', '1989-08-24', 'Male', 'Flat 1204, Hiranandani Gardens, Powai, Mumbai, Maharashtra', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400', d.id, 'Lead HR Officer', 'FULL_TIME', '2022-03-01', 'ACTIVE', '{}', NOW(), NOW()
 FROM users u, departments d WHERE u.email = 'hr@dayflow.com' AND d.code = 'HR'
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO employees (user_id, employee_code, first_name, last_name, email, phone, date_of_birth, gender, address, profile_picture_url, department_id, designation, employment_type, joining_date, status, documents, created_at, updated_at)
-SELECT u.id, 'EMP003', 'Alex', 'Morgan', 'alex.morgan@dayflow.com', '+1-555-0103', '1994-03-19', 'Non-Binary', '120 Main Street, Seattle, WA', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400', d.id, 'Senior Full-Stack Engineer', 'FULL_TIME', '2023-02-10', 'ACTIVE', '{}', NOW(), NOW()
-FROM users u, departments d WHERE u.email = 'alex.morgan@dayflow.com' AND d.code = 'ENG'
+SELECT u.id, 'EMP003', 'Vishaal', 'S', 'vishaal@dayflow.com', '+91-98765-43212', '1998-03-19', 'Male', '45/A, Financial District, Gachibowli, Hyderabad, Telangana', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400', d.id, 'Senior Full-Stack Engineer', 'FULL_TIME', '2023-02-10', 'ACTIVE', '{}', NOW(), NOW()
+FROM users u, departments d WHERE u.email = 'vishaal@dayflow.com' AND d.code = 'ENG'
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO employees (user_id, employee_code, first_name, last_name, email, phone, date_of_birth, gender, address, profile_picture_url, department_id, designation, employment_type, joining_date, status, documents, created_at, updated_at)
-SELECT u.id, 'EMP004', 'David', 'Kim', 'david.kim@dayflow.com', '+1-555-0104', '1996-11-05', 'Male', '88 Market St, San Francisco, CA', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400', d.id, 'Product UI/UX Designer', 'FULL_TIME', '2023-06-15', 'ACTIVE', '{}', NOW(), NOW()
-FROM users u, departments d WHERE u.email = 'david.kim@dayflow.com' AND d.code = 'ENG'
+SELECT u.id, 'EMP004', 'Saaral', 'Varunie', 'saaral@dayflow.com', '+91-98765-43213', '1999-11-05', 'Female', '88, Koregaon Park, Pune, Maharashtra', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400', d.id, 'Product UI/UX Designer', 'FULL_TIME', '2023-06-15', 'ACTIVE', '{}', NOW(), NOW()
+FROM users u, departments d WHERE u.email = 'saaral@dayflow.com' AND d.code = 'ENG'
 ON CONFLICT (email) DO NOTHING;
 
 -- 5. Link Department Managers
