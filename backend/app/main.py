@@ -50,16 +50,16 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # CORS Middleware for React frontend integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if "*" in settings.ALLOWED_ORIGINS else settings.ALLOWED_ORIGINS,
+    allow_origins=settings.ALLOWED_ORIGINS if isinstance(settings.ALLOWED_ORIGINS, list) else [settings.ALLOWED_ORIGINS],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-# Correlation ID & Request Timing Middleware
+# Correlation ID, Request Timing & Security Headers Middleware
 @app.middleware("http")
-async def correlation_and_timing_middleware(request: Request, call_next):
+async def correlation_timing_and_security_middleware(request: Request, call_next):
     request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
     request.state.request_id = request_id
     start_time = time.time()
@@ -69,6 +69,13 @@ async def correlation_and_timing_middleware(request: Request, call_next):
     process_time = (time.time() - start_time) * 1000.0
     response.headers["X-Request-ID"] = request_id
     response.headers["X-Process-Time-Ms"] = f"{process_time:.2f}"
+    
+    # Defense-in-depth HTTP Security Headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response
 
 
