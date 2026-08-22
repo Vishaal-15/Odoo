@@ -2,7 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.api.deps import get_current_user, require_hr
+from app.api.deps import get_current_user, require_hr, require_admin
 from app.models.user import User, RoleEnum
 from app.schemas.employee import (
     EmployeeResponse,
@@ -106,11 +106,30 @@ def get_employee_by_id(
 def update_employee_by_id(
     id: int,
     data: EmployeeUpdateAdmin,
-    _: User = Depends(require_hr),
+    current_user: User = Depends(require_hr),
     db: Session = Depends(get_db),
 ):
     """
     HR and Admin can update complete employee information including department, salary, role, and active status.
+    Generates SOC 2 compliance audit logs for salary and role changes.
     """
     service = EmployeeService(db)
-    return service.update_employee_by_admin(id, data)
+    return service.update_employee_by_admin(id, data, actor=current_user)
+
+
+@router.delete(
+    "/{id}",
+    status_code=status.HTTP_200_OK,
+    summary="Soft delete an employee (Admin only)",
+)
+def delete_employee_by_id(
+    id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Soft deletes an employee record, setting is_deleted=True and deactivating access.
+    """
+    service = EmployeeService(db)
+    service.soft_delete_employee(id, actor=current_user)
+    return {"message": f"Employee #{id} successfully soft-deleted."}

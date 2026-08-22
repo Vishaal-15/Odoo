@@ -1,5 +1,14 @@
 """Pydantic schemas export"""
-from app.schemas.auth import UserRegister, UserLogin, Token, TokenPayload
+from app.schemas.auth import (
+    UserRegister,
+    UserLogin,
+    Token,
+    TokenPayload,
+    RefreshTokenRequest,
+    VerifyEmailRequest,
+    ResendVerificationRequest,
+    LogoutRequest,
+)
 from app.schemas.employee import (
     EmployeeResponse,
     EmployeeProfileResponse,
@@ -33,12 +42,17 @@ from app.schemas.analytics import (
     LeaveBreakdownItem,
     DepartmentHeadcountItem,
 )
+from app.schemas.audit_log import AuditLogResponse, AuditLogListResponse
 
 __all__ = [
     "UserRegister",
     "UserLogin",
     "Token",
     "TokenPayload",
+    "RefreshTokenRequest",
+    "VerifyEmailRequest",
+    "ResendVerificationRequest",
+    "LogoutRequest",
     "EmployeeResponse",
     "EmployeeProfileResponse",
     "EmployeeProfileUpdateSelf",
@@ -63,4 +77,6 @@ __all__ = [
     "AttendanceTrendItem",
     "LeaveBreakdownItem",
     "DepartmentHeadcountItem",
+    "AuditLogResponse",
+    "AuditLogListResponse",
 ]

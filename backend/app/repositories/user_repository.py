@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Optional, List, Tuple
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
@@ -9,34 +10,48 @@ class UserRepository(BaseRepository[User]):
     def __init__(self, db: Session):
         super().__init__(User, db)
 
-    def get_by_id(self, user_id: int) -> Optional[User]:
-        return (
-            self.db.query(User)
-            .options(joinedload(User.profile))
-            .filter(User.id == user_id)
-            .first()
-        )
+    def get_by_id(self, user_id: int, include_deleted: bool = False) -> Optional[User]:
+        query = self.db.query(User).options(joinedload(User.profile)).filter(User.id == user_id)
+        if not include_deleted:
+            query = query.filter(User.is_deleted == False)
+        return query.first()
 
-    def get_by_email(self, email: str) -> Optional[User]:
-        return (
+    def get_by_email(self, email: str, include_deleted: bool = False) -> Optional[User]:
+        query = (
             self.db.query(User)
             .options(joinedload(User.profile))
             .filter(User.email == email.lower().strip())
-            .first()
         )
+        if not include_deleted:
+            query = query.filter(User.is_deleted == False)
+        return query.first()
 
-    def get_by_employee_id(self, employee_id: str) -> Optional[User]:
-        return (
+    def get_by_employee_id(self, employee_id: str, include_deleted: bool = False) -> Optional[User]:
+        query = (
             self.db.query(User)
             .options(joinedload(User.profile))
             .filter(User.employee_id == employee_id.strip())
+        )
+        if not include_deleted:
+            query = query.filter(User.is_deleted == False)
+        return query.first()
+
+    def get_by_verification_token(self, token: str) -> Optional[User]:
+        return (
+            self.db.query(User)
+            .options(joinedload(User.profile))
+            .filter(User.verification_token == token, User.is_deleted == False)
             .first()
         )
 
     def get_hr_admin_users(self) -> List[User]:
         return (
             self.db.query(User)
-            .filter(User.role.in_([RoleEnum.HR, RoleEnum.ADMIN]), User.is_active == True)
+            .filter(
+                User.role.in_([RoleEnum.HR, RoleEnum.ADMIN]),
+                User.is_active == True,
+                User.is_deleted == False,
+            )
             .all()
         )
 
@@ -49,7 +64,12 @@ class UserRepository(BaseRepository[User]):
         search: Optional[str] = None,
         is_active: Optional[bool] = None,
     ) -> Tuple[List[User], int]:
-        query = self.db.query(User).join(User.profile).options(joinedload(User.profile))
+        query = (
+            self.db.query(User)
+            .join(User.profile)
+            .options(joinedload(User.profile))
+            .filter(User.is_deleted == False)
+        )
 
         if is_active is not None:
             query = query.filter(User.is_active == is_active)
@@ -84,3 +104,13 @@ class UserRepository(BaseRepository[User]):
         self.db.commit()
         self.db.refresh(user)
         return user
+
+    def soft_delete(self, user_id: int) -> bool:
+        user = self.get_by_id(user_id)
+        if user:
+            user.is_deleted = True
+            user.deleted_at = datetime.now(timezone.utc)
+            user.is_active = False
+            self.db.commit()
+            return True
+        return False

@@ -11,10 +11,19 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str = "super-secret-key-change-this-in-production-dayflow-hrms"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # Short-lived access token for production
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7    # 7-day refresh token rotation window
     
+    # Rate Limiting
+    RATE_LIMIT_LOGIN: str = "10/minute"
+    RATE_LIMIT_REGISTER: str = "5/minute"
+    RATE_LIMIT_DEFAULT: str = "120/minute"
+
     # Database
     DATABASE_URL: str = "sqlite:///./dayflow.db"
+    DB_POOL_SIZE: int = 20
+    DB_MAX_OVERFLOW: int = 10
+    DB_POOL_RECYCLE: int = 1800
     
     # CORS
     ALLOWED_ORIGINS: Union[str, List[str]] = [

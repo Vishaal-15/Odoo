@@ -1,4 +1,4 @@
-from typing import Generator, List, Callable
+from typing import Generator, List, Callable, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -51,6 +51,26 @@ def get_current_user(
         )
 
     return user
+
+
+def get_optional_current_user(
+    auth: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    db: Session = Depends(get_db),
+) -> Optional[User]:
+    """Dependency that returns User if valid Bearer token is provided, or None if anonymous."""
+    if not auth or not auth.credentials:
+        return None
+    try:
+        payload = decode_access_token(auth.credentials)
+        if not payload:
+            return None
+        user_id_str = payload.get("sub")
+        if not user_id_str:
+            return None
+        user_repo = UserRepository(db)
+        return user_repo.get_by_id(int(user_id_str))
+    except Exception:
+        return None
 
 
 def get_current_active_user(

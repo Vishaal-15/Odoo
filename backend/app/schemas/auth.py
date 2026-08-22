@@ -10,7 +10,7 @@ class UserBase(BaseModel):
 
 
 class UserRegister(UserBase):
-    password: str = Field(..., min_length=6, max_length=128, examples=["SecurePass123!"])
+    password: str = Field(..., min_length=8, max_length=128, examples=["SecurePass123!"])
     first_name: str = Field(..., min_length=1, max_length=100, examples=["Alex"])
     last_name: str = Field(..., min_length=1, max_length=100, examples=["Morgan"])
     role: Optional[RoleEnum] = Field(default=RoleEnum.EMPLOYEE, examples=["EMPLOYEE"])
@@ -27,10 +27,28 @@ class UserLogin(BaseModel):
 
 class Token(BaseModel):
     access_token: str
+    refresh_token: Optional[str] = None
     token_type: str = "bearer"
     user: dict
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str = Field(..., examples=["dGhpcy1pcy1hLXJlZnJlc2gtdG9rZW4..."])
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str = Field(..., examples=["email-verification-token-string"])
+
+
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr = Field(..., examples=["employee@company.com"])
+
+
+class LogoutRequest(BaseModel):
+    refresh_token: Optional[str] = Field(default=None, examples=["refresh-token-to-revoke"])
 
 
 class TokenPayload(BaseModel):
     sub: Optional[str] = None
     exp: Optional[int] = None
+    type: Optional[str] = None

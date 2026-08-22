@@ -5,6 +5,7 @@ from app.services.attendance_service import AttendanceService
 from app.services.leave_service import LeaveService
 from app.services.payroll_service import PayrollService
 from app.services.notification_service import NotificationService
+from app.services.audit_service import AuditService
 
 __all__ = [
     "AuthService",
@@ -13,4 +14,5 @@ __all__ = [
     "LeaveService",
     "PayrollService",
     "NotificationService",
+    "AuditService",
 ]

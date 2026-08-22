@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from app.core.database import Base, get_db
 from app.core.security import get_password_hash, create_access_token
 from app.models.user import User, EmployeeProfile, RoleEnum
+from app.core.limiter import limiter
 from app.main import app
 
 # In-memory SQLite for isolated, fast testing
@@ -35,7 +36,7 @@ def db_session():
 
 @pytest.fixture(scope="function")
 def client(db_session):
-    """FastAPI TestClient with overridden get_db dependency."""
+    """FastAPI TestClient with overridden get_db dependency and rate limiter bypassed for tests."""
     def override_get_db():
         try:
             yield db_session
@@ -43,8 +44,10 @@ def client(db_session):
             pass
 
     app.dependency_overrides[get_db] = override_get_db
+    limiter.enabled = False
     with TestClient(app) as test_client:
         yield test_client
+    limiter.enabled = True
     app.dependency_overrides.clear()
 
 

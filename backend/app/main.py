@@ -1,14 +1,30 @@
+import time
+import uuid
+import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from sqlalchemy import text
+
 from app.core.config import settings
-from app.core.database import Base, engine
+from app.core.database import Base, engine, SessionLocal
+from app.core.limiter import limiter
 from app.api.v1.router import api_router
+
+# Configure structured logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] [request_id=%(name)s] %(message)s",
+)
+logger = logging.getLogger("dayflow-hrms")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Auto-create tables on startup (convenience for development & tests)
+    # Auto-create tables on startup
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -23,6 +39,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Attach rate limiter state and exception handler
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # CORS Middleware for React frontend integration
 app.add_middleware(
     CORSMiddleware,
@@ -32,11 +52,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# Correlation ID & Request Timing Middleware
+@app.middleware("http")
+async def correlation_and_timing_middleware(request: Request, call_next):
+    request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
+    request.state.request_id = request_id
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    process_time = (time.time() - start_time) * 1000.0
+    response.headers["X-Request-ID"] = request_id
+    response.headers["X-Process-Time-Ms"] = f"{process_time:.2f}"
+    return response
+
+
+# Global Unhandled Exception Handler (RFC 7807 Problem Details)
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    req_id = getattr(request.state, "request_id", "unknown")
+    logger.error(f"Unhandled server exception on {request.method} {request.url.path}: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "type": "about:blank",
+            "title": "Internal Server Error",
+            "status": 500,
+            "detail": "An unexpected error occurred. Please contact system support.",
+            "request_id": req_id,
+        },
+    )
+
+
 # Mount API v1 router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
-@app.get("/", tags=["Health Check"])
+@app.get("/", tags=["Health & Diagnostics"])
 def root():
     return {
         "app": settings.PROJECT_NAME,
@@ -47,6 +100,29 @@ def root():
     }
 
 
-@app.get("/health", tags=["Health Check"])
+@app.get("/health", tags=["Health & Diagnostics"])
 def health_check():
     return {"status": "ok"}
+
+
+@app.get("/health/live", tags=["Health & Diagnostics"])
+def liveness_probe():
+    """Kubernetes / Cloud container liveness probe."""
+    return {"status": "alive"}
+
+
+@app.get("/health/ready", tags=["Health & Diagnostics"])
+def readiness_probe():
+    """Kubernetes / Cloud container readiness probe verifying database connectivity."""
+    db = SessionLocal()
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ready", "database": "connected"}
+    except Exception as e:
+        logger.error(f"Readiness probe failed database check: {e}")
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"status": "not_ready", "database": "disconnected", "error": str(e)},
+        )
+    finally:
+        db.close()
