@@ -23,21 +23,28 @@ export const HrAttendance = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
-  useEffect(() => {
-    const loadAllAttendance = async () => {
-      setLoading(true);
-      try {
-        const data = await attendanceService.getAttendance();
-        setRecords(data);
-      } catch (err) {
-        console.error('Failed to load company attendance:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadAllAttendance = async () => {
+    setLoading(true);
+    try {
+      const data = await attendanceService.getAttendance();
+      setRecords(data);
+    } catch (err) {
+      console.error('Failed to load company attendance:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadAllAttendance();
+    window.addEventListener('attendance-updated', loadAllAttendance);
+    const interval = setInterval(loadAllAttendance, 10000); // 10s auto-refresh
+    return () => {
+      window.removeEventListener('attendance-updated', loadAllAttendance);
+      clearInterval(interval);
+    };
   }, []);
+
 
   const filteredRecords = records.filter((r) => {
     const nameMatch =

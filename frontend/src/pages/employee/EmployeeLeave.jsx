@@ -60,7 +60,14 @@ export const EmployeeLeave = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+    window.addEventListener('leave-updated', loadData);
+    const interval = setInterval(loadData, 10000);
+    return () => {
+      window.removeEventListener('leave-updated', loadData);
+      clearInterval(interval);
+    };
+  }, [user]);
+
 
   const handleApplyLeave = async (e) => {
     e.preventDefault();

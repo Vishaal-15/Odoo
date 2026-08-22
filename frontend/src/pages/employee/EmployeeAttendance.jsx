@@ -46,7 +46,14 @@ export const EmployeeAttendance = () => {
 
   useEffect(() => {
     loadAttendance();
+    window.addEventListener('attendance-updated', loadAttendance);
+    const interval = setInterval(loadAttendance, 10000);
+    return () => {
+      window.removeEventListener('attendance-updated', loadAttendance);
+      clearInterval(interval);
+    };
   }, []);
+
 
   const handlePrevMonth = () => {
     const idx = months.indexOf(selectedMonth);

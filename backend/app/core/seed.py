@@ -216,34 +216,25 @@ def seed_default_data(force: bool = False):
         sreevanth_user = created_users[3]
 
         today = date.today()
-        for i in range(7):
+        # Seed past 14 days of historical attendance (strictly past days < today)
+        for i in range(1, 14):
             att_date = today - timedelta(days=i)
-            if att_date.weekday() == 6:
+            if att_date.weekday() == 6:  # Skip Sunday
                 continue
 
             for u in created_users:
                 check_in = datetime.combine(att_date, datetime.min.time(), tzinfo=timezone.utc).replace(hour=9, minute=0)
                 check_out = datetime.combine(att_date, datetime.min.time(), tzinfo=timezone.utc).replace(hour=17, minute=30)
-
-                if att_date == today and u.id == saaral_user.id:
-                    att = Attendance(
-                        user_id=u.id,
-                        date=att_date,
-                        check_in_time=check_in,
-                        check_out_time=None,
-                        total_hours=4.5,
-                        status=AttendanceStatus.PRESENT,
-                    )
-                else:
-                    att = Attendance(
-                        user_id=u.id,
-                        date=att_date,
-                        check_in_time=check_in,
-                        check_out_time=check_out,
-                        total_hours=8.5,
-                        status=AttendanceStatus.PRESENT,
-                    )
+                att = Attendance(
+                    user_id=u.id,
+                    date=att_date,
+                    check_in_time=check_in,
+                    check_out_time=check_out,
+                    total_hours=8.5,
+                    status=AttendanceStatus.PRESENT,
+                )
                 db.add(att)
+
 
         leaves_data = [
             {
