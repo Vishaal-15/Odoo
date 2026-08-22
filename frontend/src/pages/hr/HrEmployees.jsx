@@ -232,9 +232,10 @@ export const HrEmployees = () => {
             return (
               <div
                 key={emp.id}
-                onClick={() => navigate('/profile')}
+                onClick={() => navigate(`/profile?id=${emp.id}`)}
                 className="group bg-slate-900 border border-slate-800 hover:border-purple-500/60 rounded-2xl p-5 shadow-lg hover:shadow-purple-500/10 transition-all duration-200 cursor-pointer relative flex flex-col justify-between"
               >
+
                 {/* Top-Right Status Dot Indicator (Wireframe 2: 🟢 Present, ✈️ On Leave, 🟡 Absent) */}
                 <div className="absolute top-4 right-4" title={statusInfo.label}>
                   {statusInfo.isLeave ? (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotification } from '../../hooks/useNotification';
 import { employeeService } from '../../services/employeeService';
@@ -34,6 +35,8 @@ import {
 import { formatCurrency, formatDate } from '../../utils/formatters';
 
 export const EmployeeProfile = () => {
+  const [searchParams] = useSearchParams();
+  const targetId = searchParams.get('id');
   const { user, updateProfile } = useAuth();
   const { addToast } = useNotification();
 
@@ -95,7 +98,12 @@ export const EmployeeProfile = () => {
   const loadProfile = async () => {
     setLoading(true);
     try {
-      const data = await employeeService.getMyProfile();
+      let data;
+      if (targetId && String(targetId) !== String(user?.id)) {
+        data = await employeeService.getEmployeeById(targetId);
+      } else {
+        data = await employeeService.getMyProfile();
+      }
       setProfile(data);
       const basicSal = Number(data.basic_salary) || 50000;
       setFormData({
@@ -106,25 +114,25 @@ export const EmployeeProfile = () => {
         company_name: data.company_name || 'Odoo India',
         department: data.department || 'Engineering',
         job_title: data.job_title || data.designation || 'Software Engineer',
-        manager_name: data.manager_name || 'Vishaal A K',
+        manager_name: data.manager_name || 'Kanagaraj R',
         location: data.location || 'Bangalore Office',
         joining_date: data.joining_date || data.hire_date || '2023-01-15',
-        about: data.about || 'Passionate full-stack developer dedicated to building elegant architectures and scalable cloud services.',
-        what_i_love: data.what_i_love || 'Solving challenging engineering problems and crafting delightful user interfaces.',
-        interests_and_hobbies: data.interests_and_hobbies || 'Open source software, reading, badminton, and photography.',
-        skills: data.skills || 'Python, React, FastAPI, Docker, PostgreSQL, TailwindCSS',
-        certifications: data.certifications || 'AWS Certified Solutions Architect, PostgreSQL Professional',
-        date_of_birth: data.date_of_birth || '1998-05-14',
-        address: data.address || '120 Market St, Bangalore, India',
+        about: data.about || '',
+        what_i_love: data.what_i_love || '',
+        interests_and_hobbies: data.interests_and_hobbies || '',
+        skills: data.skills || '',
+        certifications: data.certifications || '',
+        date_of_birth: data.date_of_birth || '',
+        address: data.address || '',
         nationality: data.nationality || 'Indian',
-        personal_email: data.personal_email || `${(data.first_name || 'user').toLowerCase()}.personal@gmail.com`,
+        personal_email: data.personal_email || '',
         gender: data.gender || 'Male',
         marital_status: data.marital_status || 'Single',
         bank_name: data.bank_name || 'HDFC Bank',
-        account_number: data.account_number || '50100234567890',
-        ifsc_code: data.ifsc_code || 'HDFC0001234',
-        pan_no: data.pan_no || 'ABCDE1234F',
-        uan_no: data.uan_no || '100987654321',
+        account_number: data.account_number || '',
+        ifsc_code: data.ifsc_code || '',
+        pan_no: data.pan_no || '',
+        uan_no: data.uan_no || '',
         monthly_wage: basicSal * 2 || 100000,
         working_days: 5,
         break_time: '1 hour',
@@ -138,7 +146,7 @@ export const EmployeeProfile = () => {
 
   useEffect(() => {
     loadProfile();
-  }, []);
+  }, [targetId, user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -169,9 +177,21 @@ export const EmployeeProfile = () => {
         uan_no: formData.uan_no,
       };
 
-      const updated = await employeeService.updateMyProfile(payload);
+      let updated;
+      if (targetId && String(targetId) !== String(user?.id) && (user?.role === 'ADMIN' || user?.role === 'HR')) {
+        updated = await employeeService.updateEmployee(targetId, {
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          phone: formData.phone,
+          department: formData.department,
+          designation: formData.job_title,
+          ...payload,
+        });
+      } else {
+        updated = await employeeService.updateMyProfile(payload);
+        updateProfile(updated);
+      }
       setProfile(updated);
-      updateProfile(updated);
       addToast('Profile saved successfully!', 'success');
     } catch (err) {
       addToast(err.message || 'Failed to update profile', 'error');
@@ -179,6 +199,7 @@ export const EmployeeProfile = () => {
       setSaving(false);
     }
   };
+
 
   const handleAddSkill = () => {
     if (!newSkill.trim()) return;
